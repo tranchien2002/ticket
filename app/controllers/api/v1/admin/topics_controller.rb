@@ -39,7 +39,15 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
       code: Settings.code.success,
       message: "",
       data: {
-        topics: @topics
+        topics: @topics,
+        status: @status,
+        box: {
+          new: @new,
+          open: @open,
+          mine: @mine,
+          pending: @pending,
+          closed: @closed
+        }
       }
     }
   end
