@@ -1,31 +1,3 @@
-# == Schema Information
-#
-# Table name: topics
-#
-#  id               :integer          not null, primary key
-#  forum_id         :integer
-#  user_id          :integer
-#  user_name        :string
-#  name             :string
-#  posts_count      :integer          default(0), not null
-#  waiting_on       :string           default("admin"), not null
-#  last_post_date   :datetime
-#  closed_date      :datetime
-#  last_post_id     :integer
-#  current_status   :string           default("new"), not null
-#  private          :boolean          default(FALSE)
-#  assigned_user_id :integer
-#  cheatsheet       :boolean          default(FALSE)
-#  points           :integer          default(0)
-#  post_cache       :text
-#  created_at       :datetime         not null
-#  updated_at       :datetime         not null
-#  locale           :string
-#  doc_id           :integer          default(0)
-#  channel          :string           default("email")
-#  kind             :string           default("ticket")
-#
-
 class Topic < ActiveRecord::Base
 
   include SentenceCase
@@ -193,17 +165,17 @@ class Topic < ActiveRecord::Base
   def create_topic_with_webhook_user(params)
     self.user = User.find_by_email(params['customer']['emailAddress'])
     unless self.user #User not found, lets craete it from olark params
-      @token, enc = ApplicationHelper.generate_token(User, :reset_password_token)
+      # @token, enc = ApplicationHelper.generate_token(User, :reset_password_token)
 
       @user = self.build_user
-      @user.reset_password_token = enc
-      @user.reset_password_sent_at = Time.now.utc
+      # @user.reset_password_token = enc
+      # @user.reset_password_sent_at = Time.now.utc
 
       @user.name = params['customer']['fullName']
       @user.login = params['customer']['emailAddress'].split("@")[0]
       @user.email = params['customer']['emailAddress']
       # @user.home_phone = params[:topic][:user][:home_phone]
-      @user.password = User.create_password
+      # @user.password = User.create_password
       @user.save
     end
     self.user.persisted? && self.save

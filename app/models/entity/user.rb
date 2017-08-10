@@ -7,9 +7,11 @@ module Entity
     expose :bio
     expose :signature
     expose :role
-    expose :home_phone
-    expose :work_phone
-    expose :cell_phone
+    # expose :home_phone
+    # expose :work_phone
+    # expose :cell_phone
+    expose :phone
+    expose :phone2
     expose :company
     expose :street
     expose :city

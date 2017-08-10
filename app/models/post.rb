@@ -1,22 +1,3 @@
-# == Schema Information
-#
-# Table name: posts
-#
-#  id          :integer          not null, primary key
-#  topic_id    :integer
-#  user_id     :integer
-#  body        :text
-#  kind        :string
-#  active      :boolean          default(TRUE)
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  points      :integer          default(0)
-#  attachments :string           default([]), is an Array
-#  cc          :string
-#  bcc         :string
-#  raw_email   :text
-#
-
 class Post < ActiveRecord::Base
 
   attr_accessor :reply_id
