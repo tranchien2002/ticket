@@ -3,7 +3,7 @@ module OmniAuth
   module Strategies
     class Sso < OmniAuth::Strategies::OAuth2
 
-      CUSTOM_PROVIDER_URL = "http://localhost:3001/"
+      CUSTOM_PROVIDER_URL = "http://localhost:3000/"
 
       option :client_options, {
         site: CUSTOM_PROVIDER_URL,
@@ -19,7 +19,9 @@ module OmniAuth
         {
           name: raw_info["info"]["username"],
           email: raw_info["info"]["email"],
-          role: raw_info["info"]["role"]
+          role: raw_info["info"]["role"],
+          phone: raw_info["info"]["phone"],
+          phone2: raw_info["info"]["phone2"]
         }
       end
 

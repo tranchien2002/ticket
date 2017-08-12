@@ -1035,7 +1035,7 @@ module ParamsValidation
           status: {
             status: Settings.params_attribute_status.required,
             validation: [
-              {expression: "var.present? && var.is_a?(String)", message: "Trộng thái không hợp lệ"}
+              {expression: "var.present? && var.is_a?(String)", message: "Trang thái không hợp lệ"}
             ]
           },
           page: {

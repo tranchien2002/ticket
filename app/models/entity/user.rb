@@ -13,24 +13,24 @@ module Entity
     expose :phone
     expose :phone2
     expose :company
-    expose :street
-    expose :city
-    expose :state
-    expose :zip
-    expose :title
-    expose :twitter
-    expose :linkedin
-    expose :thumbnail
-    expose :medium_image
-    expose :large_image
-    expose :language
+    # expose :street
+    # expose :city
+    # expose :state
+    # expose :zip
+    # expose :title
+    # expose :twitter
+    # expose :linkedin
+    # expose :thumbnail
+    # expose :medium_image
+    # expose :large_image
+    # expose :language
     expose :assigned_ticket_count, documentation: { type: "Integer" }
     expose :topics_count, documentation: { type: "Integer" }
     expose :active, documentation: { type: "Boolean", desc: "Whether or not the user is active." }
     expose :created_at
     expose :updated_at
     expose :email
-    expose :sign_in_count, documentation: { type: "Integer" }
+    # expose :sign_in_count, documentation: { type: "Integer" }
     expose :team_list
     expose :account_number
     expose :priority

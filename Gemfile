@@ -28,6 +28,7 @@ gem 'kaminari'
 gem 'attachinary'
 gem 'rails-settings-cached'
 gem 'carrierwave'
+gem "rack-cors"
 #===========
 
 group :development, :test do
