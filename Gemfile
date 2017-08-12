@@ -16,8 +16,20 @@ gem 'turbolinks', '~> 5'
 gem 'jbuilder', '~> 2.5'
 gem 'active_model_serializers', '~> 0.10.6'
 gem 'config'
+
+#7/8
 gem 'omniauth'
 gem 'omniauth-oauth2'
+gem 'acts-as-taggable-on'
+gem 'pg_search'
+gem 'paper_trail'
+gem 'rails-i18n'
+gem 'kaminari'
+gem 'attachinary'
+gem 'rails-settings-cached'
+gem 'carrierwave'
+gem "rack-cors"
+#===========
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
