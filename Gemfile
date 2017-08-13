@@ -29,6 +29,8 @@ gem 'attachinary'
 gem 'rails-settings-cached'
 gem 'carrierwave'
 gem "rack-cors"
+gem 'responders'
+gem 'mini_magick'
 #===========
 
 group :development, :test do

@@ -2,8 +2,8 @@
 class CategoriesController < ApplicationController
 
   before_action :knowledgebase_enabled?, only: ['index','show']
-  skip_before_filter :verify_authenticity_token
-  theme :theme_chosen
+  skip_before_action :verify_authenticity_token, raise: false
+  # theme :theme_chosen
   before_action :verify_admin_and_agent
 
   def index

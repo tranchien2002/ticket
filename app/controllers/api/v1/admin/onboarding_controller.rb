@@ -2,7 +2,7 @@ class Api::V1::Admin::OnboardingController < Api::V1::Admin::BaseController
 
   before_action :allow_onboarding, except: 'complete'
   before_action :verify_admin
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
 
   def index
     @user = current_user
@@ -29,11 +29,10 @@ class Api::V1::Admin::OnboardingController < Api::V1::Admin::BaseController
       code: Settings.code.success,
       message: "Chỉnh sửa thành công",
       data: {
-        redirect_to: admin_settings_path
+        redirect_to: admin_settings_path,
         js: "Helpy.showPanel(3);$('#edit_user_1').enableClientSideValidations();"
       }
     }
-    end
   end
 
   protected

@@ -4,7 +4,7 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
   before_action :fetch_counts, only: ['index','show', 'update_topic', 'user_profile']
   before_action :remote_search, only: ['index', 'show', 'update_topic']
   before_action :get_all_teams, except: ['shortcuts']
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
 
   def index
     GeneralHelpers.params_validation(:get, :admin_get_topics, params)
@@ -135,32 +135,32 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
     end
 
     fetch_counts
-    respond_to do |format|
-      if (@user.save || !@user.nil?) && @topic.save
-        @post = @topic.posts.create(
-          body: params[:topic][:post][:body],
-          user_id: @user.id,
-          kind: 'first',
-          screenshots: params[:topic][:screenshots],
-          attachments: params[:topic][:post][:attachments]
-        )
+    # respond_to do |format|
+    if (@user.save || !@user.nil?) && @topic.save
+      @post = @topic.posts.create(
+        body: params[:topic][:post][:body],
+        user_id: @user.id,
+        kind: 'first',
+        screenshots: params[:topic][:screenshots],
+        attachments: params[:topic][:post][:attachments]
+      )
 
-        # Send email
-        # UserMailer.new_user(@user.id, @token).deliver_later
+      # Send email
+      # UserMailer.new_user(@user.id, @token).deliver_later
 
-        # track event in GA
-        tracker('Request', 'Post', 'New Topic')
-        tracker('Agent: Unassigned', 'New', @topic.to_param)
+      # track event in GA
+      tracker('Request', 'Post', 'New Topic')
+      tracker('Agent: Unassigned', 'New', @topic.to_param)
 
-        # Now that we are rendering show, get the posts (just one)
-        # TODO probably can refactor this
-        @posts = @topic.posts.chronologic.includes(:user)
+      # Now that we are rendering show, get the posts (just one)
+      # TODO probably can refactor this
+      @posts = @topic.posts.chronologic.includes(:user)
 
-        redirect_path({admin_topic_path: admin_topic_path}, {id: @topic}) && return
-      else
-        redirect_path({new_admin_topic_path: new_admin_topic_path}) && return
-      end
+      redirect_path({admin_topic_path: admin_topic_path}, {id: @topic}) && return
+    else
+      redirect_path({new_admin_topic_path: new_admin_topic_path}) && return
     end
+    # end
   end
 
   # Updates discussion status
@@ -218,7 +218,7 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
       get_tickets
       redirect_path({admin_topics_path: 'admin/topics/index'}) && return
     else
-      redirect_path({{update_admin_topics_path: 'admin/topics/update_ticket'}, {id: @topic.id}) && return
+      redirect_path({update_admin_topics_path: 'admin/topics/update_ticket'}, {id: @topic.id}) && return
     end
   end
 
@@ -337,14 +337,14 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
     @topic = Topic.find(params[:id])
 
     if @topic.update_attributes(topic_params)
-      respond_to do |format|
-        format.html {
-          redirect_to(@topic)
-        }
-        format.json {
-          respond_with_bip(@topic)
-        }
-      end
+      # respond_to do |format|
+      #   format.html {
+          redirect_path({admin_topics_path:admin_topics_path(@topic)}) && return
+        # }
+        # format.json {
+          # respond_with_bip(@topic)
+        # }
+      # end
     else
       logger.info("error")
     end
@@ -366,14 +366,14 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
         kind: 'note',
       )
 
-      respond_to do |format|
-        format.html {
-          redirect_to admin_topic_path(@topic)
-        }
-        format.js {
+      # respond_to do |format|
+      #   format.html {
+          redirect_path({admin_topics_path: admin_topics_path(@topic)}) && return
+        # }
+        # format.js {
           render 'update_ticket', id: @topic.id
-        }
-      end
+        # }
+      # end
     else
       logger.info("error")
     end
@@ -404,17 +404,17 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
 
     fetch_counts
     get_all_teams
-    respond_to do |format|
-      format.html #render action: 'ticket', id: @topic.id
-      format.js {
+    # respond_to do |format|
+    #   format.html #render action: 'ticket', id: @topic.id
+    #   format.js {
         if params[:topic_ids].count > 1
           get_tickets
           render 'index'
         else
           render 'update_ticket', id: @topic.id
         end
-      }
-    end
+      # }
+    # end
   end
 
   def unassign_team

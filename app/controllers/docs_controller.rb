@@ -4,8 +4,8 @@ class DocsController < ApplicationController
   before_action :knowledgebase_enabled?, only: ['show']
   before_action :doc_available_to_view?, only: ['show']
   after_action  :is_user_signed_in?
-  theme :theme_chosen
-  skip_before_filter :verify_authenticity_token
+  # themes :theme_chosen
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin_and_agent
 
   def show

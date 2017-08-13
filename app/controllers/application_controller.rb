@@ -1,8 +1,12 @@
+require "application_responder"
+
 #done
 class ApplicationController < ActionController::Base
-  protect_from_forgery with: :exception
+  self.responder = ApplicationResponder
+  respond_to :html
+
+  # protect_from_forgery with: :null_session
   helper_method :recaptcha_enabled?
-  skip_before_filter :verify_authenticity_token
   before_action :set_vars
   around_action :set_time_zone, if: :current_user
   before_action :verify_admin_and_agent
@@ -199,7 +203,7 @@ class ApplicationController < ActionController::Base
   def redirect_path path, extra_data = {}
     render json: {
       code: Settings.code.success,
-      message: "Chuyển hướng"
+      message: "Chuyển hướng",
       data: {
         redirect_to: path,
         extra_data: extra_data

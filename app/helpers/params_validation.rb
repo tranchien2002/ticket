@@ -126,7 +126,7 @@ module ParamsValidation
         params_structure: {
           post: {
             status: Settings.params_attribute_status.required
-          }
+          },
           topic: {
             status: Settings.params_attribute_status.required,
             name: {
@@ -223,37 +223,37 @@ module ParamsValidation
             ]
           },
           acts_as_taggable_on_tag: {
-            status: Settings.params_structure.required,
+            status: Settings.params_attribute_status.required,
             name: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             description: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             color: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             email_address: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             email_name: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             show_on_helpcenter: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             show_on_admin: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             show_on_dashboard: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             }
           }
@@ -275,7 +275,7 @@ module ParamsValidation
             },
             layout: {
               status: Settings.params_attribute_status.optional,
-              validation: [
+              validation: []
             },
             private: {
               status: Settings.params_attribute_status.optional,
@@ -440,7 +440,7 @@ module ParamsValidation
           id: {
             status: Settings.params_attribute_status.required,
             validation: []
-          }
+          },
           topic: {
             status: Settings.params_attribute_status.required,
             name: {
@@ -511,7 +511,7 @@ module ParamsValidation
           flag: {
             status: Settings.params_attribute_status.required,
             reason: {
-              Settings.params_attribute_status.required,
+              status: Settings.params_attribute_status.required,
               validation: [
                 {expression: "var.present?", message: "Id không hợp lệ"}
               ]
@@ -750,37 +750,37 @@ module ParamsValidation
             ]
           },
           acts_as_taggable_on_tag: {
-            status: Settings.params_structure.required,
+            status: Settings.params_attribute_status.required,
             name: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             description: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             color: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             email_address: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             email_name: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             show_on_helpcenter: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             show_on_admin: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             },
             show_on_dashboard: {
-              status: Settings.params_structure.optional,
+              status: Settings.params_attribute_status.optional,
               validation: []
             }
           }
@@ -804,7 +804,7 @@ module ParamsValidation
             validation: [
               {expression: "var.present? && var.is_a?(Fixnum)", message: "Id không hợp lệ"}
             ]
-          }
+          },
           doc: {
             status: Settings.params_attribute_status.required,
             title: {
@@ -876,7 +876,7 @@ module ParamsValidation
             validation: [
               {expression: "var.present? && var.is_a?(Fixnum)", message: "Id không hợp lệ"}
             ]
-          }
+          },
           category: {
             status: Settings.params_attribute_status.required,
             name: {
@@ -1116,16 +1116,16 @@ module ParamsValidation
           }
         }
       },
-      doc_available_to_view: {
-        params_structure: {
-          id: {
-            status: Settings.params_attribute_status.required,
-            validation: [
-              {expression: "var.present? && var.is_a?(Fixnum)", message: "Id không hợp lệ"}
-            ]
-          }
-        }
-      },
+      # doc_available_to_view: {
+      #   params_structure: {
+      #     id: {
+      #       status: Settings.params_attribute_status.required,
+      #       validation: [
+      #         {expression: "var.present? && var.is_a?(Fixnum)", message: "Id không hợp lệ"}
+      #       ]
+      #     }
+      #   }
+      # },
       show_internal_category: {
         params_structure: {
           id: {
