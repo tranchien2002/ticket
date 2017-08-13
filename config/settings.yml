@@ -4,3 +4,28 @@ code:
 params_attribute_status:
   required: 0
   optional: 1
+
+error_codes:
+  apartment:
+    not_found: 404
+    not_used: 400
+    used: 400
+  client:
+    unauthorized: 401
+  common:
+    bad_request: 400
+    connection_refused: 400
+    not_found: 404
+    server_error: 500
+    unauthorized: 401
+  customer:
+    not_found: 404
+
+response_headers:
+  result_code: "result_code"
+
+result_codes:
+  failure: "Error"
+  success: "Success"
+
+chungcu: "http://localhost:3000"

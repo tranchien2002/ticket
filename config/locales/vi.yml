@@ -1,0 +1,9 @@
+vi:
+  api_error:
+    common:
+      bad_request: "Yêu cầu lỗi!"
+      connection_refused: "Yêu cầu bị từ chối!"
+      not_found: "Không tìm thấy thông tin!"
+      server_error: "Server xảy ra lỗi!"
+      un_saved: "Thông tin chưa được lưu vào hệ thống!"
+      unauthorized: "Không cho phép truy cập!"
