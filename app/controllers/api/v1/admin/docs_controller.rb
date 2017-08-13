@@ -1,7 +1,7 @@
 class Api::V1::Admin::DocsController < Api::V1::Admin::BaseController
 
   before_action :verify_admin
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
 
   def new
     GeneralHelpers.params_validation(:new, :new_doc, params)
@@ -34,7 +34,7 @@ class Api::V1::Admin::DocsController < Api::V1::Admin::BaseController
       message: "",
       data: {
         doc: @doc,
-        category: @category
+        category: @category,
         categories: @categories
       }
     }
@@ -66,7 +66,7 @@ class Api::V1::Admin::DocsController < Api::V1::Admin::BaseController
       raise APIError::Common::ServerError.new(
         {
           status: 500,
-          message: "Không thể cập nhật tài liệu này"
+          message: "Không thể cập nhật tài liệu này",
           data: {
             doc: @doc
           }
@@ -85,12 +85,12 @@ class Api::V1::Admin::DocsController < Api::V1::Admin::BaseController
       if @doc.destroyed?
         render json: {
           code: Settings.code.success,
-          message: "Xóa tài liệu thành công"
+          message: "Xóa tài liệu thành công",
           data: {
-            js:"
+            js: "
             $('#doc-#{@doc.id}').fadeOut();
             Helpy.ready();
-            Helpy.track();"
+            Helpy.track();",
           }
         }
       else

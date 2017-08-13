@@ -1,7 +1,7 @@
 class Api::V1::Webhook::InboundController < Api::V1::Webhook::BaseController
 
   # We skip auth token for incoming webhooks
-  skip_before_action :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action(only: [:form]) { enabled?('form') }
   before_action(only: [:form]) { check_token(AppSettings['webhook.form_key']) }
 

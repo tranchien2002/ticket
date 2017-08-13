@@ -1,7 +1,7 @@
 #done
 class ErrorsController < ApplicationController
 
-  theme :theme_chosen
+  # theme :theme_chosen
   layout 'errors'
 
   def not_found

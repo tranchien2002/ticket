@@ -1,6 +1,6 @@
 #done
 class FlagsController < ApplicationController
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin_and_agent
 
   def create

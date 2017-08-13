@@ -1,7 +1,7 @@
 class Api::V1::Admin::UsersController < Api::V1::Admin::BaseController
 
   before_action :verify_admin
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin, only: ['invite','invite_users']
   before_action :fetch_counts, :only => ['show']
   before_action :get_all_teams
@@ -23,7 +23,7 @@ class Api::V1::Admin::UsersController < Api::V1::Admin::BaseController
     render json: {
       code: Settings.code.success,
       message: "",
-      users: @users
+      users: @users,
       user: @user
     }
   end

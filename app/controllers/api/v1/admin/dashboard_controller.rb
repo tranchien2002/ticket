@@ -1,8 +1,8 @@
 class Api::V1::Admin::DashboardController < Api::V1::Admin::BaseController
 
-  skip_before_action :verify_admin
+  # skip_before_action :verify_admin
   before_action :get_all_teams
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
 
   # Routes to different views depending on role of user
   def index

@@ -1,10 +1,10 @@
 class Api::V1::Admin::InternalDocsController < Api::V1::Admin::BaseController
   before_action :knowledgebase_enabled?, only: ['show']
   before_action :doc_available_to_view?, only: ['show']
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin
 
-  respond_to :html
+  # respond_to :html
 
   def show
     define_topic_for_doc
