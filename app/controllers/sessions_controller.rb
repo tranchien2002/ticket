@@ -1,5 +1,5 @@
 class SessionsController < ApplicationController
-  theme :theme_chosen
+  # theme :theme_chosen
   before_action :login_required, only: :destroy
 
   def create

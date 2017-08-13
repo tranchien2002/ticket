@@ -26,6 +26,6 @@ module UsersHelper
   #     image_tag('', data: { name: "#{user.name}", width: "#{size}", height: "#{size}", 'font-size' => font, 'char-count' => 2}, class: 'profile img-circle')
   #   end
 
-  end
+  # end
 
 end

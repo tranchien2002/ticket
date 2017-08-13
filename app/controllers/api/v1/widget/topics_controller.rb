@@ -1,6 +1,6 @@
-class Api::V1::Widget::TopicsController < Widget::BaseController
+class Api::V1::Widget::TopicsController < Api::V1::Widget::BaseController
 
-  layout 'widget'
+  # layout 'widget'
   before_action :allow_iframe_requests
 
   def new
@@ -42,9 +42,9 @@ class Api::V1::Widget::TopicsController < Widget::BaseController
       tracker('Request', 'Post', 'New Topic')
       tracker('Agent: Unassigned', 'New', @topic.to_param)
 
-      redirect_to widget_thanks_path
+      redirect_path(widget_thanks_path) && return
     else
-      render 'new'
+      redirect_path(new_widget_path) && return
     end
 
   end

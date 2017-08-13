@@ -3,12 +3,12 @@ class PostsController < ApplicationController
 
   # Make sure forums are enabled
   before_action :forums_enabled?, only: ['index','show']
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin_and_agent
 
-  respond_to :js, only: [:up_vote]
+  # respond_to :js, only: [:up_vote]
   # layout "clean", only: :index
-  theme :theme_chosen
+  # theme :theme_chosen
 
   def index
     @topic = Topic.undeleted.ispublic.where(id: params[:topic_id]).first#.includes(:forum)

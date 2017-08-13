@@ -1,7 +1,7 @@
 class Api::V1::Admin::PostsController < Api::V1::Admin::BaseController
 
   before_action :verify_admin
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
 
   def edit
     GeneralHelpers.params_validation(:edit, :admin_edit_post, params)
@@ -62,7 +62,7 @@ class Api::V1::Admin::PostsController < Api::V1::Admin::BaseController
 
       render json: {
         code: Settings.code.success,
-        message: "Đã lưu bài đăng"
+        message: "Đã lưu bài đăng",
         data: {
           redirect_to: [
             admin_topic_path(@post.topic_id)
@@ -198,7 +198,7 @@ class Api::V1::Admin::PostsController < Api::V1::Admin::BaseController
     @post = Post.find_by_id(params[:id])
     render json: {
       code: Settings.code.success,
-      message: "raw"
+      message: "raw",
       data: {
         post: @post
       }

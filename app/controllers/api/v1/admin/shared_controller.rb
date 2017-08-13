@@ -1,6 +1,6 @@
 class Api::V1::Admin::SharedController < Api::V1::Admin::BaseController
 
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin
 
   def update_order

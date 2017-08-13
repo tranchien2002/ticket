@@ -1,9 +1,9 @@
 #done
 class ForumsController < ApplicationController
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   # Make sure forums are enabled
   before_action :forums_enabled?, only: ['index','show']
-  theme :theme_chosen
+  # theme :theme_chosen
   before_action :verify_admin_and_agent
 
   def index
@@ -13,7 +13,7 @@ class ForumsController < ApplicationController
       code: Settings.code.success,
       message: "",
       data: {
-        page_title: @page_title
+        page_title: @page_title,
         forums: @forums
       }
     }

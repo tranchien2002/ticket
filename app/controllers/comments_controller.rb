@@ -3,7 +3,7 @@ class CommentsController < ApplicationController
 
   before_action :authenticate_user!
   before_action :get_doc
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin_and_agent
 
   # This method handles the first comment and subsequent replies, storing them
@@ -21,7 +21,7 @@ class CommentsController < ApplicationController
     @post.screenshots = params[:post][:screenshots]
 
     if @post.save
-      redirect_path({doc_relative_path: doc_relative_path(params[:request][:origin]}, @doc) && return
+      redirect_path({doc_relative_path: doc_relative_path(params[:request][:origin])}, @doc) && return
     else
       raise APIError::Common::ServerError.new({status: 500, message: "Lưu bài đăng thất bại"})
     end

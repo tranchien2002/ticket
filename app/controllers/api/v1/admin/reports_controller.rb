@@ -1,7 +1,7 @@
 class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
 
   include StatsHelper
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin
   before_action :get_all_teams
 
@@ -22,14 +22,14 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       code: Settings.code.success,
       message: "",
       data: {
-        tickets: @tickets
+        tickets: @tickets,
         closed: @closed,
-        actions: @actions
-        total_tickets: @total_tickets
-        total_replies: @total_replies
-        total_closed: @total_closed
-        total_activities: @total_activities
-        median_close_time: @median_close_time
+        actions: @actions,
+        total_tickets: @total_tickets,
+        total_replies: @total_replies,
+        total_closed: @total_closed,
+        total_activities: @total_activities,
+        median_close_time: @median_close_time,
         number_of_days: @number_of_days
       }
     }

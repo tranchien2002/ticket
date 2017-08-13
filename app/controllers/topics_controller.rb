@@ -1,5 +1,5 @@
 class TopicsController < ApplicationController
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin_and_agent
   before_action :authenticate_user!, :only => ['tickets','ticket']
   before_action :allow_iframe_requests
@@ -7,7 +7,7 @@ class TopicsController < ApplicationController
   before_action :topic_creation_enabled?, only: ['new', 'create']
   before_action :get_all_teams, only: 'new'
   before_action :get_public_forums, only: ['new', 'create']
-  theme :theme_chosen
+  # theme :theme_chosen
 
 
   def index
@@ -21,7 +21,7 @@ class TopicsController < ApplicationController
       end
       @page_title = @forum.name
       render json: {
-        code Settings.code.success,
+        code: Settings.code.success,
         message: "",
         data: {
           topic: @topic,
@@ -151,9 +151,9 @@ class TopicsController < ApplicationController
         @topic.reload
       end
     end
-    respond_to do |format|
-      format.js
-    end
+    # respond_to do |format|
+    #   format.js
+    # end
   end
 
   def tag

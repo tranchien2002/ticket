@@ -1,8 +1,8 @@
 #done
 class HomeController < ApplicationController
 
-  theme :theme_chosen
-  skip_before_filter :verify_authenticity_token
+  # theme :theme_chosen
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :verify_admin_and_agent
 
   def index
@@ -23,7 +23,7 @@ class HomeController < ApplicationController
         rss: @rss,
         articles: @articles,
         team: @team,
-        feed_link: f@eed_link,
+        feed_link: @feed_link,
         categories: @categories
       }
     }
