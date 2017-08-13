@@ -3,7 +3,7 @@ require "application_responder"
 #done
 class ApplicationController < ActionController::Base
   self.responder = ApplicationResponder
-  respond_to :html
+  # respond_to :html
 
   # protect_from_forgery with: :null_session
   helper_method :recaptcha_enabled?
@@ -33,7 +33,7 @@ class ApplicationController < ActionController::Base
 
   #8/8
   def login_required
-    redirect_to "#{Settings.comment_url}auth/sso" unless session[:user_id]
+    redirect_to "#{Settings.chungcu}auth/sso" unless session[:user_id]
   end
 
   def current_user
@@ -221,7 +221,7 @@ class ApplicationController < ActionController::Base
         return true if @current_user.send(m)
       end
     end
-    raise APIError::Client::Unauthorized.new
+    raise APIError::Common::Unauthorized.new
   end
 
 end
