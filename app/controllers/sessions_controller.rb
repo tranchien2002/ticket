@@ -20,7 +20,7 @@ class SessionsController < ApplicationController
       end
       session[:user_id] = omniauth
     end
-    redirect_to root_path
+    redirect_to Settings.chungcu
   end
 
   def failure
