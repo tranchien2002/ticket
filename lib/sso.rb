@@ -26,6 +26,7 @@ module OmniAuth
       end
 
       def raw_info
+        # byebug
         @raw_info ||= access_token.get("/auth/sso/user.json?oauth_token=#{access_token.token}").parsed
       end
     end

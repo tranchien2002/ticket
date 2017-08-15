@@ -1,13 +1,6 @@
 class User < ActiveRecord::Base
-  # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable
-  # devise :invitable, :database_authenticatable, :registerable,
-  #        :recoverable, :rememberable, :trackable, :validatable,
-  #        :omniauthable, :omniauth_providers => Devise.omniauth_providers
-
   INVALID_NAME_CHARACTERS = /\A('|")|('|")\z/
 
-  # Add preferences to user model
   include RailsSettings::Extend
 
   TEMP_EMAIL_PREFIX = 'change@me'
@@ -15,10 +8,7 @@ class User < ActiveRecord::Base
   attr_accessor :opt_in
 
   validates :name, presence: true, format: { with: /\A\D+\z/ }
-  validates :email, format: { with: /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i, on: :create }
-
-  # include Gravtastic
-  # mount_uploader :profile_image, ProfileImageUploader
+  validates :email, format: { with: /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i, on: :create }, :if => lambda {self.email.present?}
 
   include PgSearch
   pg_search_scope :user_search,
@@ -26,13 +16,11 @@ class User < ActiveRecord::Base
 
   paginates_per 15
 
-  # Relationships
   has_and_belongs_to_many :roles
   has_many :topics
   has_many :posts
   has_many :votes
   has_many :docs
-  # has_many :api_keys
   has_attachment  :avatar, accept: [:jpg, :png, :gif]
   # is_gravtastic
 

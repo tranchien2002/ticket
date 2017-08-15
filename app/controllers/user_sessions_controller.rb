@@ -1,9 +1,9 @@
-class SessionsController < ApplicationController
-  # theme :theme_chosen
+class UserSessionsController < ApplicationController
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :login_required, only: :destroy
 
   def create
-    omniauth = env['omniauth.auth']
+    omniauth = request.env['omniauth.auth']
     if ["admin", "agent"].include?(omniauth['info']['role'])
       user = User.find_by_uid(omniauth['uid'])
       unless user
@@ -17,10 +17,20 @@ class SessionsController < ApplicationController
         unless user.save
           raise APIError::Common::ServerError.new
         end
+      else
+        if user.role != omniauth['info']['role']
+          user.update_attribute(role: omniauth['info']['role'])
+        end
       end
-      session[:user_id] = omniauth
+      session[:user] = omniauth
+
+      render json: {
+        code: 1,
+        message: "Thành công"
+      } and return
     end
-    redirect_to Settings.chungcu
+
+    raise APIError::Common::BadRequest.new
   end
 
   def failure
@@ -28,7 +38,7 @@ class SessionsController < ApplicationController
   end
 
   def destroy
-    session[:user_id] = nil
+    session[:user] = nil
     redirect_to "#{CUSTOM_PROVIDER_URL}/users/sign_out"
   end
 end

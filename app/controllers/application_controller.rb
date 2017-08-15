@@ -1,15 +1,10 @@
 require "application_responder"
 
-#done
 class ApplicationController < ActionController::Base
-  self.responder = ApplicationResponder
-  # respond_to :html
-
-  # protect_from_forgery with: :null_session
+  protect_from_forgery with: :exception
   helper_method :recaptcha_enabled?
   before_action :set_vars
-  around_action :set_time_zone, if: :current_user
-  before_action :verify_admin_and_agent
+  # around_action :set_time_zone, if: :current_user
 
   rescue_from APIError::Base do |e|
     key_error = e.class.name.split("::").drop(1).map(&:underscore)
@@ -32,13 +27,18 @@ class ApplicationController < ActionController::Base
 
 
   #8/8
+
+  def authenticate_user
+    raise APIError::Common::Unauthorized if session[:user]["uid"].nil?
+  end
+
   def login_required
-    redirect_to "#{Settings.chungcu}auth/sso" unless session[:user_id]
+    redirect_to "#{Settings.chungcu}/auth/sso" unless session[:user]
   end
 
   def current_user
-    return unless session[:user_id]
-    @current_user ||= User.find_by(id: session[:user_id])
+    return unless session[:user]
+    @current_user ||= User.find_by(uid: session[:user]["uid"])
   end
 
   def verify_agent
@@ -54,7 +54,7 @@ class ApplicationController < ActionController::Base
   end
 
   def user_signed_in?
-    return true if session[:user_id]
+    return true if session[:user]
     return false
   end
 
@@ -190,9 +190,9 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def set_time_zone(&block)
-    Time.use_zone(current_user.time_zone, &block)
-  end
+  # def set_time_zone(&block)
+  #   Time.use_zone(current_user.time_zone, &block)
+  # end
 
   def get_all_teams
     return unless teams?
@@ -215,10 +215,9 @@ class ApplicationController < ActionController::Base
   def check_access_role(method_name)
     method_name.slice!("verify_")
     method_name = method_name.split("_and_")
-    if user_signed_in?
+    if current_user
       method_name.each do |m|
-        m.concat("?")
-        return true if @current_user.send(m)
+        return true if current_user.role == m
       end
     end
     raise APIError::Common::Unauthorized.new

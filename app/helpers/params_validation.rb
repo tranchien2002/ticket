@@ -1023,7 +1023,7 @@ module ParamsValidation
       admin_show_topic: {
         params_structure: {
           id: {
-            status: Settings.params_attribute_status.required,
+            status: Settings.params_attribute_status.optional,
             validation: [
               {expression: "var.present? && var.is_a?(Fixnum)", message: "Id không hợp lệ"}
             ]
@@ -1033,13 +1033,13 @@ module ParamsValidation
       admin_get_topics: {
         params_structure: {
           status: {
-            status: Settings.params_attribute_status.required,
+            status: Settings.params_attribute_status.optional,
             validation: [
               {expression: "var.present? && var.is_a?(String)", message: "Trang thái không hợp lệ"}
             ]
           },
           page: {
-            status: Settings.params_attribute_status.required,
+            status: Settings.params_attribute_status.optional,
             validation: [
               {expression: "var.present? && var.is_a?(Fixnum)", message: "Page không hợp lêj"}
             ]
