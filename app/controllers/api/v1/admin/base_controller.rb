@@ -1,5 +1,5 @@
 class Api::V1::Admin::BaseController < ApplicationController
-  before_action :authenticate_user!
+  skip_before_action :verify_authenticity_token, raise: false
   helper_method :show_onboarding?
 
   def show_onboarding?

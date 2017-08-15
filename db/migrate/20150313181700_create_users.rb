@@ -5,7 +5,7 @@ class CreateUsers < ActiveRecord::Migration[5.1]
       # t.string :identity_url
       t.string :name
       t.string :email
-      t.boolean :admin, :default => false
+      # t.boolean :admin, :default => false
       t.text :bio
       t.text :signature
       t.string :role, :default => 'agent'
@@ -18,7 +18,7 @@ class CreateUsers < ActiveRecord::Migration[5.1]
       # t.string :street
       # t.string :city
       t.string :state
-      t.string :zip
+      # t.string :zip
       t.string :title
       # t.string :twitter
       # t.string :linkedin
