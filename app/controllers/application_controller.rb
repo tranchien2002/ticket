@@ -2,14 +2,14 @@ require "application_responder"
 
 #done
 class ApplicationController < ActionController::Base
-  self.responder = ApplicationResponder
+  # self.responder = ApplicationResponder
   # respond_to :html
 
-  # protect_from_forgery with: :null_session
+  protect_from_forgery with: :exception
   helper_method :recaptcha_enabled?
   before_action :set_vars
-  around_action :set_time_zone, if: :current_user
-  before_action :verify_admin_and_agent
+  # around_action :set_time_zone, if: :current_user
+  # before_action :verify_admin_and_agent
 
   rescue_from APIError::Base do |e|
     key_error = e.class.name.split("::").drop(1).map(&:underscore)
@@ -38,7 +38,7 @@ class ApplicationController < ActionController::Base
 
   def current_user
     return unless session[:user_id]
-    @current_user ||= User.find_by(id: session[:user_id])
+    @current_user ||= User.find_by(uid: session[:user_id]["uid"])
   end
 
   def verify_agent
@@ -218,10 +218,11 @@ class ApplicationController < ActionController::Base
     if user_signed_in?
       method_name.each do |m|
         m.concat("?")
-        return true if @current_user.send(m)
+        return true if current_user.send(m)
       end
+    else
+      raise APIError::Common::Unauthorized
     end
-    raise APIError::Common::Unauthorized.new
   end
 
 end

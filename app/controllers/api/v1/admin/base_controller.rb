@@ -1,5 +1,5 @@
 class Api::V1::Admin::BaseController < ApplicationController
-  before_action :authenticate_user!
+  # before_action :authenticate_user!
   helper_method :show_onboarding?
 
   def show_onboarding?

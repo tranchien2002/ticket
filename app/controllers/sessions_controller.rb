@@ -3,7 +3,7 @@ class SessionsController < ApplicationController
   before_action :login_required, only: :destroy
 
   def create
-    omniauth = env['omniauth.auth']
+    omniauth = request.env['omniauth.auth']
     if ["admin", "agent"].include?(omniauth['info']['role'])
       user = User.find_by_uid(omniauth['uid'])
       unless user
@@ -20,7 +20,7 @@ class SessionsController < ApplicationController
       end
       session[:user_id] = omniauth
     end
-    redirect_to Settings.chungcu
+    render json: {code: 1, message: session[:user_id]}
   end
 
   def failure
