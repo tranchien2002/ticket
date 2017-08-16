@@ -43,10 +43,15 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
         status: @status,
         box: {
           new: @new,
-          open: @open,
-          mine: @mine,
           pending: @pending,
+          open: @open,
+          active: @active,
+          mine: @mine,
           closed: @closed
+        },
+        extra_info: {
+          unread: @unread,
+          spam: @spam
         }
       }
     }

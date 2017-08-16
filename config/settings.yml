@@ -1,6 +1,7 @@
 code:
-  suceess: 1
+  success: 1
   failure: 0
+
 params_attribute_status:
   required: 0
   optional: 1
