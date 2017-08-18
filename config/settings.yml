@@ -29,4 +29,5 @@ result_codes:
   failure: "Error"
   success: "Success"
 
-chungcu: "http://localhost:3000"
+# chungcu: "http://localhost:3000"
+chungcu: "http://chungcu1.cloudapp.net"
