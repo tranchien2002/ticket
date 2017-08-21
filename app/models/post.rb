@@ -13,11 +13,10 @@ class Post < ActiveRecord::Base
   before_validation :truncate_body
   validates :kind, :user, :user_id, :body, presence: true
 
-
-  after_create  :update_waiting_on_cache
-  after_create  :assign_on_reply
-  after_commit  :notify, on: :create
-  after_save  :update_topic_cache
+  # after_create  :update_waiting_on_cache
+  # after_create  :assign_on_reply
+  # after_commit  :notify, on: :create
+  # after_save  :update_topic_cache
 
   scope :all_by_topic, -> (topic) { where("topic_id = ?", topic).order('updated_at ASC').include(user) }
   scope :active, -> { where(active: true) }

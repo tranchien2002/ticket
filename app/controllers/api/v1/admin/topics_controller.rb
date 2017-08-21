@@ -1,20 +1,19 @@
 class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
-
-  before_action :verify_admin
   before_action :fetch_counts, only: ['index','show', 'update_topic', 'user_profile']
   before_action :remote_search, only: ['index', 'show', 'update_topic']
   before_action :get_all_teams, except: ['shortcuts']
-  skip_before_action :verify_authenticity_token, raise: false
 
   def index
-    GeneralHelpers.params_validation(:get, :admin_get_topics, params)
     @status = params[:status] || "pending"
     if current_user.is_restricted? && teams?
       topics_raw = Topic.all.tagged_with(current_user.team_list, any: true)
     else
       topics_raw = params[:team].present? ? Topic.all.tagged_with(params[:team], any: true) : Topic
     end
-    topics_raw = topics_raw.includes(user: :avatar_files).chronologic
+    topics_raw = topics_raw.select("users.name as user_name", "users.email as user_email", "topics.*",
+      "assigned_users.name as assigned_user_name", "assigned_users.email as assigned_user_email")
+      .joins(:user).joins("LEFT JOIN users assigned_users ON assigned_users.id = topics.assigned_user_id")
+      .order(updated_at: :desc)
     get_all_teams
     case @status
     when 'all'
@@ -32,29 +31,8 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
     else
       topics_raw = topics_raw.where(current_status: @status)
     end
-    @topics = topics_raw.page params[:page]
+    @topics = topics_raw.paginate(page: params[:page], per_page: Settings.per_page)
     tracker("Admin-Nav", "Click", @status.titleize)
-
-    render json: {
-      code: Settings.code.success,
-      message: "",
-      data: {
-        topics: @topics,
-        status: @status,
-        box: {
-          new: @new,
-          pending: @pending,
-          open: @open,
-          active: @active,
-          mine: @mine,
-          closed: @closed
-        },
-        extra_info: {
-          unread: @unread,
-          spam: @spam
-        }
-      }
-    }
   end
 
   def show
@@ -89,83 +67,28 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
     }
   end
 
-  def new
-    GeneralHelpers.params_validation(:new, :admin_new_topic, params)
-    fetch_counts
-
-    @topic = Topic.new
-    @user = params[:user_id].present? ? User.find(params[:user_id]) : User.new
-
-    render json: {
-      topic: @topic,
-      user: @user
-    }
-  end
-
-  # TODO: Still need to refactor this method and the update methods into one
   def create
-    GeneralHelpers.params_validation(:create, :admin_create_topic)
-
-    @page_title = "Bắt dầu cuộc trò chuyện"
-    @title_tag = "#{AppSettings['settings.site_name']}: #{@page_title}"
-
-    @forum = Forum.find_by_id(1)
-    @user = User.where("lower(email) = ?", params[:topic][:user][:email].downcase).first
-
-    @topic = @forum.topics.new(
-      name: params[:topic][:name],
-      private: true,
-      team_list: params[:topic][:team_list],
-      channel: params[:topic][:channel],
-      tag_list: params[:topic][:tag_list],
+    params[:admin_create_topic] = JSON.parse(params[:admin_create_topic])
+    GeneralHelpers.params_validation(:create, :admin_create_topic, params)
+    topic = Topic.create(
+      name: params[:admin_create_topic][:topic][:name],
+      tag_list: params[:admin_create_topic][:topic][:tag_list],
+      user_id: current_user.id
     )
-
-    if @user.nil?
-
-      # @token, enc = ApplicationHelper.generate_token(User, :reset_password_token)
-
-      @user = @topic.build_user
-      # @user.reset_password_token = enc
-      # @user.reset_password_sent_at = Time.now.utc
-
-      @user.name = params[:topic][:user][:name]
-      @user.login = params[:topic][:user][:email].split("@")[0]
-      @user.email = params[:topic][:user][:email]
-      @user.phone = params[:topic][:user][:phone]
-      # @user.password = User.create_password
-
-      @user.save
-    else
-      @topic.user_id = @user.id
+    post = topic.posts.new(
+      body: params[:admin_create_topic][:post][:body],
+      user_id: current_user.id,
+      kind: :first,
+      attachments: params[:admin_create_topic][:post][:attachments]
+    )
+    if post.save
+      attachments = params[:attachments]
+      if attachments.present?
+        dir = "#{Rails.root}/public/attachment/posts/#{post.id}/"
+        post.update_columns attachments: save_files_with_token(dir, attachments).to_json
+      end
     end
-
-    fetch_counts
-    # respond_to do |format|
-    if (@user.save || !@user.nil?) && @topic.save
-      @post = @topic.posts.create(
-        body: params[:topic][:post][:body],
-        user_id: @user.id,
-        kind: 'first',
-        screenshots: params[:topic][:screenshots],
-        attachments: params[:topic][:post][:attachments]
-      )
-
-      # Send email
-      # UserMailer.new_user(@user.id, @token).deliver_later
-
-      # track event in GA
-      tracker('Request', 'Post', 'New Topic')
-      tracker('Agent: Unassigned', 'New', @topic.to_param)
-
-      # Now that we are rendering show, get the posts (just one)
-      # TODO probably can refactor this
-      @posts = @topic.posts.chronologic.includes(:user)
-
-      redirect_path({admin_topic_path: admin_topic_path}, {id: @topic}) && return
-    else
-      redirect_path({new_admin_topic_path: new_admin_topic_path}) && return
-    end
-    # end
+    render json: {code: 1, message: "Thành công"}
   end
 
   # Updates discussion status
@@ -537,7 +460,6 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
   end
 
   private
-
   def get_tickets
     GeneralHelpers.params_validation(:get, :admin_get_tickets, params)
     if params[:status].nil?

@@ -125,30 +125,36 @@ module ParamsValidation
       admin_create_topic: {
         params_structure: {
           post: {
-            status: Settings.params_attribute_status.required
+            body: {
+              status: Settings.params_attribute_status.required,
+              validation: [
+                {expression: "var.present?", message: "Không tồn tại nội dung"}
+              ]
+            }
           },
           topic: {
-            status: Settings.params_attribute_status.required,
             name: {
               status: Settings.params_attribute_status.required,
-              validation: []
-            },
-            team_list: {
-              status: Settings.params_attribute_status.required,
-              validation: []
-            },
-            channel: {
-              status: Settings.params_attribute_status.required,
-              validation: []
-            },
-            tag_list: {
-              status: Settings.params_attribute_status.required,
-              validation: []
-            },
-            screenshots: {
-              status: Settings.params_attribute_status.required,
-              validation: []
-            }
+              validation: [
+                {expression: "var.present?", message: "Không tồn tại tên topic"}
+              ]
+            }#,
+            # team_list: {
+            #   status: Settings.params_attribute_status.required,
+            #   validation: []
+            # },
+            # channel: {
+            #   status: Settings.params_attribute_status.required,
+            #   validation: []
+            # },
+            # tag_list: {
+            #   status: Settings.params_attribute_status.required,
+            #   validation: []
+            # },
+            # screenshots: {
+            #   status: Settings.params_attribute_status.required,
+            #   validation: []
+            # }
           }
         }
       },

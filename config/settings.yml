@@ -6,6 +6,8 @@ params_attribute_status:
   required: 0
   optional: 1
 
+per_page: 15
+
 error_codes:
   apartment:
     not_found: 404
@@ -29,5 +31,4 @@ result_codes:
   failure: "Error"
   success: "Success"
 
-# chungcu: "http://localhost:3000"
 chungcu: "http://chungcu1.cloudapp.net"
