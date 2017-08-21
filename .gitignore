@@ -28,5 +28,5 @@ config/environments/*.local.yml
 
 # Ignore encrypted secrets key file.
 config/secrets.yml.key
-config/database.yml
 store/*
+public/attachment/*

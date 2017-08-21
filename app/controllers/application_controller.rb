@@ -60,6 +60,24 @@ class ApplicationController < ActionController::Base
     return false
   end
 
+  def save_files_with_token dir, files
+    file_name_list = [];
+    begin
+      files.each do |file|
+        FileUtils.mkdir_p(dir) unless File.directory?(dir)
+        extn = File.extname file.original_filename
+        name = File.basename(file.original_filename, extn).gsub(/[^A-z0-9]/, "_")
+        full_name = name + "_" + SecureRandom.hex(5) + extn
+        file_name_list.push full_name
+        path = File.join(dir, full_name)
+        File.open(path, "wb") { |f| f.write file.read }
+      end
+      return file_name_list
+    rescue
+      return []
+    end
+  end
+
   def recaptcha_enabled?
     AppSettings['settings.recaptcha_enabled'] == '1' && AppSettings['settings.recaptcha_site_key'].present? && AppSettings['settings.recaptcha_api_key'].present?
   end
