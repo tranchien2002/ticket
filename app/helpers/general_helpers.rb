@@ -15,7 +15,6 @@ module GeneralHelpers
       #voi params moi can xet
 
       if value.is_a?(Hash)
-
         if params.has_key?(key)
           error_info.concat(check_validation(value, params[key]))
         end
@@ -26,7 +25,7 @@ module GeneralHelpers
           error_info << "Không tồn tại trường yêu cầu #{key}!"
           next
         end
-        match_params(value, params[key], error_info)
+        match_params(value, params_structure[key], error_info)
       end
     end
   end

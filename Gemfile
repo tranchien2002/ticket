@@ -17,6 +17,9 @@ gem 'jbuilder', '~> 2.5'
 gem 'active_model_serializers', '~> 0.10.6'
 gem 'config'
 
+gem "bulk_insert"
+gem 'faker', github: 'stympy/faker'
+
 #7/8
 gem 'omniauth'
 gem 'omniauth-oauth2'
@@ -24,7 +27,7 @@ gem 'acts-as-taggable-on'
 gem 'pg_search'
 gem 'paper_trail'
 gem 'rails-i18n'
-gem 'kaminari'
+gem 'will_paginate'
 gem 'attachinary'
 gem 'rails-settings-cached'
 gem 'carrierwave'

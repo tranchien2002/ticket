@@ -2,10 +2,11 @@ class Topic < ActiveRecord::Base
 
   include SentenceCase
 
-  belongs_to :forum, counter_cache: true, touch: true
-  belongs_to :user, counter_cache: true, touch: true
-  belongs_to :doc, counter_cache: true, touch: true
-  belongs_to :assigned_user, class_name: 'User'
+  # belongs_to :forum, counter_cache: true, touch: true
+  belongs_to :user, counter_cache: true, touch: true, optional: true
+  # belongs_to :doc, counter_cache: true, touch: true
+  # belongs_to :assigned_user, class_name: 'User'
+  belongs_to :assigned_user, class_name: "User", optional: true
 
   has_many :posts, :dependent => :delete_all
   accepts_nested_attributes_for :posts
@@ -13,17 +14,15 @@ class Topic < ActiveRecord::Base
   has_many :votes, :as => :voteable
   has_attachments  :screenshots, accept: [:jpg, :png, :gif, :pdf, :txt, :rtf, :doc, :docx, :ppt, :pptx, :xls, :xlsx, :zip]
 
-  paginates_per 25
+  # include PgSearch
+  # multisearchable :against => [:id, :name, :post_cache],
+  #                 :if => :public?
 
-  include PgSearch
-  multisearchable :against => [:id, :name, :post_cache],
-                  :if => :public?
-
-  pg_search_scope :admin_search,
-                  against: [:id, :name, :user_name, :current_status, :post_cache],
-                  associated_against: {
-                    teams: [:name]
-                  }
+  # pg_search_scope :admin_search,
+  #                 against: [:id, :name, :user_name, :current_status, :post_cache],
+  #                 associated_against: {
+  #                   teams: [:name]
+  #                 }
 
   # various scopes
   scope :recent, -> { order('created_at DESC').limit(8) }
@@ -49,13 +48,13 @@ class Topic < ActiveRecord::Base
 
   # may want to get rid of this filter:
   # before_save :check_for_private
-  before_create :add_locale
+  # before_create :add_locale
 
-  before_save :cache_user_name
+  # before_save :cache_user_name
   acts_as_taggable_on :tags, :teams
 
   validates :name, presence: true, length: { maximum: 255 }
-  # validates :user_id, presence: true
+  validates :user_id, presence: true
 
   def to_param
     "#{id}-#{name.parameterize}"

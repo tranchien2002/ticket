@@ -25,6 +25,8 @@ class ApplicationController < ActionController::Base
     }.merge!(data.present? ? {} : {data: data}) , :status => error_code
   end
 
+  respond_to :json
+
 
   #8/8
 
@@ -41,21 +43,39 @@ class ApplicationController < ActionController::Base
     @current_user ||= User.find_by(uid: session[:user]["uid"])
   end
 
-  def verify_agent
+  def check_agent
     check_access_role(__method__.to_s)
   end
 
-  def verify_admin
+  def check_admin
     check_access_role(__method__.to_s)
   end
 
-  def verify_admin_and_agent
+  def check_admin_and_agent
     check_access_role(__method__.to_s)
   end
 
   def user_signed_in?
     return true if session[:user]
     return false
+  end
+
+  def save_files_with_token dir, files
+    file_name_list = [];
+    begin
+      files.each do |file|
+        FileUtils.mkdir_p(dir) unless File.directory?(dir)
+        extn = File.extname file.original_filename
+        name = File.basename(file.original_filename, extn).gsub(/[^A-z0-9]/, "_")
+        full_name = name + "_" + SecureRandom.hex(5) + extn
+        file_name_list.push full_name
+        path = File.join(dir, full_name)
+        File.open(path, "wb") { |f| f.write file.read }
+      end
+      return file_name_list
+    rescue
+      return []
+    end
   end
 
   def recaptcha_enabled?
@@ -213,7 +233,7 @@ class ApplicationController < ActionController::Base
 
   private
   def check_access_role(method_name)
-    method_name.slice!("verify_")
+    method_name.slice!("check_")
     method_name = method_name.split("_and_")
     if current_user
       method_name.each do |m|
