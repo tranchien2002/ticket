@@ -25,6 +25,8 @@ class ApplicationController < ActionController::Base
     }.merge!(data.present? ? {} : {data: data}) , :status => error_code
   end
 
+  respond_to :json
+
 
   #8/8
 
@@ -41,15 +43,15 @@ class ApplicationController < ActionController::Base
     @current_user ||= User.find_by(uid: session[:user]["uid"])
   end
 
-  def verify_agent
+  def check_agent
     check_access_role(__method__.to_s)
   end
 
-  def verify_admin
+  def check_admin
     check_access_role(__method__.to_s)
   end
 
-  def verify_admin_and_agent
+  def check_admin_and_agent
     check_access_role(__method__.to_s)
   end
 
@@ -213,7 +215,7 @@ class ApplicationController < ActionController::Base
 
   private
   def check_access_role(method_name)
-    method_name.slice!("verify_")
+    method_name.slice!("check_")
     method_name = method_name.split("_and_")
     if current_user
       method_name.each do |m|

@@ -8,20 +8,17 @@ class User < ActiveRecord::Base
   attr_accessor :opt_in
 
   validates :name, presence: true, format: { with: /\A\D+\z/ }
-  validates :email, format: { with: /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i, on: :create }, :if => lambda {self.email.present?}
+  validates :email, format: { with: /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i, on: :create }, allow_blank: true
 
   include PgSearch
   pg_search_scope :user_search,
                   against: [:name, :login, :email, :company, :account_number, :phone, :phone2]
-
-  paginates_per 15
 
   has_and_belongs_to_many :roles
   has_many :topics
   has_many :posts
   has_many :votes
   has_many :docs
-  has_attachment  :avatar, accept: [:jpg, :png, :gif]
   # is_gravtastic
 
   # after_invitation_accepted :set_role_on_invitation_accept

@@ -6,10 +6,10 @@ Rails.application.routes.draw do
   match "/logout", to: "user_sessions#destroy", via: :all
 
   # root "static_pages#index"
-  namespace :api do
+  namespace :api, defaults: {format: :json} do
     namespace :v1 do
       namespace :admin do
-        resources :topics, except: [:delete, :edit] do
+        resources :topics, except: [:destroy, :edit] do
           resources :posts
         end
 
