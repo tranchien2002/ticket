@@ -1,5 +1,5 @@
 class Api::V1::Admin::BaseController < ApplicationController
-  before_action :check_admin
+  before_action :check_BuildingManager
   skip_before_action :verify_authenticity_token
   helper_method :show_onboarding?
 
@@ -39,7 +39,7 @@ class Api::V1::Admin::BaseController < ApplicationController
       topics = Topic.tagged_with(current_user.team_list, :any => true)
       @admins = User.agents #can_receive_ticket.tagged_with(current_user.team_list, :any => true)
     else
-      topics = Topic.all
+      topics = Topic.where(building_id: current_user.building_id)
       @admins = User.agents
     end
     @new = topics.unread.count

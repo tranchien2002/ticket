@@ -133,6 +133,12 @@ module ParamsValidation
             }
           },
           topic: {
+            assigned_user: {
+              status: Settings.params_attribute_status.required,
+              validation: [
+                {expression: "var.is_a?(Hash)", message: "Không tồn tại assigned_user"}
+              ]
+            },
             name: {
               status: Settings.params_attribute_status.required,
               validation: [

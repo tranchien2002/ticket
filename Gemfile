@@ -18,6 +18,7 @@ gem 'active_model_serializers', '~> 0.10.6'
 gem 'config'
 
 gem "bulk_insert"
+gem "ransack"
 gem 'faker', github: 'stympy/faker'
 
 #7/8

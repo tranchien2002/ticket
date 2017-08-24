@@ -7,11 +7,11 @@ class Post < ActiveRecord::Base
   has_many :votes, :as => :voteable
   has_attachments :screenshots, accept: [:jpg, :png, :gif, :pdf]
   has_many :flags
-  mount_uploaders :attachments, AttachmentUploader
+  # mount_uploaders :attachments, AttachmentUploader
 
   validates :body, length: { maximum: 10_000 }
   before_validation :truncate_body
-  validates :kind, :user, :user_id, :body, presence: true
+  validates :user, :user_id, :body, presence: true
 
   # after_create  :update_waiting_on_cache
   # after_create  :assign_on_reply
