@@ -22,7 +22,7 @@ class Topic < ActiveRecord::Base
   scope :neww, -> (building_id) {where(current_status: "new", building_id: building_id)}
 
   scope :recent, -> { order('created_at DESC').limit(8) }
-  scope :open, -> { where(current_status: "open") }
+  # scope :open, -> { where(current_status: "open") }
   scope :unread, -> { where("assigned_user_id = ? OR current_status = ?", nil, "new").where.not(current_status: 'closed') }
   scope :spam, -> { where(current_status: "spam")}
   scope :assigned, -> { where.not(assigned_user_id: nil) }

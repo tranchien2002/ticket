@@ -20,7 +20,7 @@ error_codes:
     connection_refused: 400
     not_found: 404
     server_error: 500
-    unauthorized: 401
+    unauthorized: 400
   customer:
     not_found: 404
 
