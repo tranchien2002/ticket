@@ -7,3 +7,7 @@ vi:
       server_error: "Server xảy ra lỗi!"
       un_saved: "Thông tin chưa được lưu vào hệ thống!"
       unauthorized: "Không cho phép truy cập!"
+
+  closed_message: "Công việc này đã đóng."
+  reopen_message: "Công việc này đã mở trở lại."
+  trash_message: "Công việc này đã bị xóa."

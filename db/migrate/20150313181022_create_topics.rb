@@ -16,6 +16,8 @@ class CreateTopics < ActiveRecord::Migration[5.1]
       t.integer :points, :default => 0
       t.text :post_cache
 
+      t.integer :building_id
+
       t.timestamps null: false
     end
   end
