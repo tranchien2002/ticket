@@ -10,6 +10,10 @@ Rails.application.routes.draw do
     namespace :v1 do
       namespace :admin do
         resources :topics, except: [:destroy, :edit] do
+          put :update_topic, on: :collection
+          get :dashboard, on: :collection
+          put :assign_agent, on: :collection
+          get :search, on: :collection
           resources :posts
         end
 

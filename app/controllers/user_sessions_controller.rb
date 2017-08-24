@@ -7,10 +7,11 @@ class UserSessionsController < ApplicationController
     user = User.find_by_uid(omniauth["uid"]) || User.new
     user.uid = omniauth["uid"]
     user.name = omniauth["info"]["name"]
-    user.email = omniauth["info"]["email"],
-    user.role = omniauth["info"]["role"],
-    user.phone = omniauth["info"]["phone"],
+    user.email = omniauth["info"]["email"]
+    user.role = omniauth["info"]["role"]
+    user.phone = omniauth["info"]["phone"]
     user.avatar = omniauth["info"]["avatar"]
+    user.building_id = omniauth["info"]["building_id"]
     raise APIError::Common::UnSaved unless user.save
     session[:user] = omniauth
     render json: {code: 1, message: "Thành công"}
@@ -22,6 +23,6 @@ class UserSessionsController < ApplicationController
 
   def destroy
     session[:user] = nil
-    redirect_to "#{CUSTOM_PROVIDER_URL}/users/sign_out"
+    redirect_to "#{Settings.chungcu}/users/sign_out"
   end
 end

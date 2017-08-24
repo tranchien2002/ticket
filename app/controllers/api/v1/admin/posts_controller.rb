@@ -1,8 +1,5 @@
 class Api::V1::Admin::PostsController < Api::V1::Admin::BaseController
 
-  before_action :verify_admin
-  skip_before_action :verify_authenticity_token, raise: false
-
   def edit
     GeneralHelpers.params_validation(:edit, :admin_edit_post, params)
     @post = Post.where(id: params[:id]).first
@@ -30,59 +27,18 @@ class Api::V1::Admin::PostsController < Api::V1::Admin::BaseController
   end
 
   def create
-    GeneralHelpers.params_validation(:create_post, :admin_create_post, params)
-    @topic = Topic.find_by_id(params[:topic_id])
-    @post = Post.new(post_params)
-
-    raise APIError::Common::NotFound.new(
-      status: 404,
-      message: "Không tìm thấy topic"
-    ) unless @topic
-
-    @post.topic_id = @topic.id
-    @post.user_id = current_user.id
-    get_all_teams
-
+    topic = Topic.find_by id: params[:topic_id]
+    raise APIError::Common::NotFound unless topic
+    params[:post] = JSON.parse(params[:post])
+    @post = topic.posts.new(body: params[:post][:body], user_id: current_user.id)
     if @post.save
-      if params[:post][:resolved] == "1"
-        @topic.close(current_user.id)
-        tracker("Agent: #{current_user.name}", "Closed", @topic.to_param) #TODO: Need minutes
+      attachments = params[:attachments]
+      if attachments.present?
+        dir = "#{Rails.root}/public/attachments/posts/#{@post.id}/"
+        @post.update_columns attachments: save_files_with_token(dir, attachments).to_json
       end
-
-      fetch_counts
-      @posts = @topic.posts.chronologic
-
-      @admins = User.agents
-      case @post.kind
-      when "reply"
-        tracker("Agent: #{current_user.name}", "Agent Replied", @topic.to_param) #TODO: Need minutes
-      when "note"
-        tracker("Agent: #{current_user.name}", "Agent Posted Note", @topic.to_param) #TODO: Need minutes
-      end
-
-      render json: {
-        code: Settings.code.success,
-        message: "Đã lưu bài đăng",
-        data: {
-          redirect_to: [
-            admin_topic_path(@post.topic_id)
-          ],
-          admins: @admins,
-          topic: @topic,
-          posts: @posts
-        }
-      }
     else
-      render json: {
-        code: Settings.code.success,
-        message: "",
-        data: {
-          redirect_to: [
-            new_admin_topic,
-            admin_topic_path(@post.topic_id)
-          ]
-        }
-      }
+      raise APIError::Common::Unsaved
     end
   end
 

@@ -14,30 +14,23 @@ class Topic < ActiveRecord::Base
   has_many :votes, :as => :voteable
   has_attachments  :screenshots, accept: [:jpg, :png, :gif, :pdf, :txt, :rtf, :doc, :docx, :ppt, :pptx, :xls, :xlsx, :zip]
 
-  # include PgSearch
-  # multisearchable :against => [:id, :name, :post_cache],
-  #                 :if => :public?
-
-  # pg_search_scope :admin_search,
-  #                 against: [:id, :name, :user_name, :current_status, :post_cache],
-  #                 associated_against: {
-  #                   teams: [:name]
-  #                 }
-
   # various scopes
+  scope :active, -> (building_id) {where(current_status: "active", building_id: building_id)}
+  scope :mine, -> (building_id, user_id) {where(assigned_user_id: user_id, building_id: building_id)}
+  scope :pending, -> (building_id) {where(current_status: "pending", building_id: building_id)}
+  scope :closed, -> (building_id) {where(current_status: "closed", building_id: building_id)}
+  scope :neww, -> (building_id) {where(current_status: "new", building_id: building_id)}
+
   scope :recent, -> { order('created_at DESC').limit(8) }
   scope :open, -> { where(current_status: "open") }
   scope :unread, -> { where("assigned_user_id = ? OR current_status = ?", nil, "new").where.not(current_status: 'closed') }
-  scope :pending, -> { where(current_status: "pending") }
-  scope :mine, -> (user) { where(assigned_user_id: user) }
-  scope :closed, -> { where(current_status: "closed") }
   scope :spam, -> { where(current_status: "spam")}
   scope :assigned, -> { where.not(assigned_user_id: nil) }
 
   scope :chronologic, -> { order('updated_at DESC') }
   scope :reverse, -> { order('updated_at ASC') }
   scope :by_popularity, -> { order('points DESC') }
-  scope :active, -> { where(current_status: %w(open pending)) }
+  # scope :active, -> { where(current_status: %w(open pending)) }
   scope :undeleted, -> { where.not(current_status: 'trash') }
   scope :front, -> { limit(6) }
   scope :for_doc, -> { where("doc_id= ?", doc)}
@@ -85,7 +78,7 @@ class Topic < ActiveRecord::Base
 
   def self.bulk_reopen(post_attributes)
     Post.bulk_insert values: post_attributes
-    self.update_all(current_status: 'open')
+    self.update_all(current_status: 'new', updated_at: Time.current)
   end
 
   def close(user_id = 2)
@@ -97,7 +90,7 @@ class Topic < ActiveRecord::Base
 
   def self.bulk_close(post_attributes)
     Post.bulk_insert values: post_attributes
-    self.update_all(current_status: 'closed', closed_date: Time.current)
+    self.update_all(current_status: 'closed', closed_date: Time.current, updated_at: Time.current)
   end
 
   def trash(user_id = 2)
@@ -124,7 +117,7 @@ class Topic < ActiveRecord::Base
 
   def self.bulk_agent_assign(post_attributes, assigned_to)
     Post.bulk_insert values: post_attributes
-    self.update_all(assigned_user_id: assigned_to, current_status: 'pending')
+    self.update_all(assigned_user_id: assigned_to, current_status: "active", updated_at: Time.current)
   end
 
   def self.bulk_group_assign(post_attributes, assigned_group)

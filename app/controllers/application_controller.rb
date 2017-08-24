@@ -2,8 +2,8 @@ require "application_responder"
 
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
-  helper_method :recaptcha_enabled?
-  before_action :set_vars
+  # helper_method :recaptcha_enabled?
+  # before_action :set_vars
   # around_action :set_time_zone, if: :current_user
 
   rescue_from APIError::Base do |e|
@@ -41,6 +41,10 @@ class ApplicationController < ActionController::Base
   def current_user
     return unless session[:user]
     @current_user ||= User.find_by(uid: session[:user]["uid"])
+  end
+
+  def check_BuildingManager
+    check_access_role(__method__.to_s)
   end
 
   def check_agent

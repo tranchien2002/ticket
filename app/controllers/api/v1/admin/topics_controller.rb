@@ -1,90 +1,99 @@
 class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
-  before_action :fetch_counts, only: ['index','show', 'update_topic', 'user_profile']
-  before_action :remote_search, only: ['index', 'show', 'update_topic']
-  before_action :get_all_teams, except: ['shortcuts']
+  # before_action :fetch_counts, only: ['show', 'user_profile']
+  # before_action :remote_search, only: ['index', 'show', 'update_topic']
+  # before_action :get_all_teams, except: ['shortcuts']
+
+  def dashboard
+    @all = Topic.where(building_id: current_user.building_id).count
+    @new = Topic.neww(current_user.building_id).count
+    @active = Topic.active(current_user.building_id).count
+    @mine = Topic.mine(current_user.building_id, current_user.id).count
+    @closed = Topic.closed(current_user.building_id).count
+  end
 
   def index
-    @status = params[:status] || "pending"
-    if current_user.is_restricted? && teams?
-      topics_raw = Topic.all.tagged_with(current_user.team_list, any: true)
+    @status = params[:status] || "new"
+    if @status == "all"
+      @topics = Topic.select("users.uid as user_uid", "users.name as user_name", "users.email as user_email", "topics.*",
+        "assigned_users.uid as assigned_user_uid", "assigned_users.name as assigned_user_name", "assigned_users.email as assigned_user_email")
+        .joins(:user).joins("LEFT JOIN users assigned_users ON assigned_users.id = topics.assigned_user_id")
+        .where(building_id: current_user.building_id).order(updated_at: :desc)
+        .paginate(page: params[:page], per_page: Settings.per_page)
+    elsif @status == "mine"
+      @topics = Topic.select("users.uid as user_uid", "users.name as user_name", "users.email as user_email", "topics.*",
+        "assigned_users.uid as assigned_user_uid", "assigned_users.name as assigned_user_name", "assigned_users.email as assigned_user_email")
+        .joins(:user).joins("LEFT JOIN users assigned_users ON assigned_users.id = topics.assigned_user_id")
+        .where(building_id: current_user.building_id, current_status: "active", assigned_user_id: current_user.id)
+        .order(updated_at: :desc)
+        .paginate(page: params[:page], per_page: Settings.per_page)
     else
-      topics_raw = params[:team].present? ? Topic.all.tagged_with(params[:team], any: true) : Topic
+      @topics = Topic.select("users.uid as user_uid", "users.name as user_name", "users.email as user_email", "topics.*",
+        "assigned_users.uid as assigned_user_uid", "assigned_users.name as assigned_user_name", "assigned_users.email as assigned_user_email")
+        .joins(:user).joins("LEFT JOIN users assigned_users ON assigned_users.id = topics.assigned_user_id")
+        .where(building_id: current_user.building_id, current_status: @status).order(updated_at: :desc)
+        .paginate(page: params[:page], per_page: Settings.per_page)
     end
-    topics_raw = topics_raw.select("users.name as user_name", "users.email as user_email", "topics.*",
-      "assigned_users.name as assigned_user_name", "assigned_users.email as assigned_user_email")
+  end
+
+  def search
+    @topics = Topic.select("users.uid as user_uid", "users.name as user_name", "users.email as user_email", "topics.*",
+      "assigned_users.uid as assigned_user_uid", "assigned_users.name as assigned_user_name", "assigned_users.email as assigned_user_email")
       .joins(:user).joins("LEFT JOIN users assigned_users ON assigned_users.id = topics.assigned_user_id")
-      .order(updated_at: :desc)
-    get_all_teams
-    case @status
-    when 'all'
-      topics_raw = topics_raw.all
-    when 'new'
-      topics_raw = topics_raw.unread
-    when 'active'
-      topics_raw = topics_raw.active
-    when 'unread'
-      topics_raw = topics_raw.unread.all
-    when 'assigned'
-      topics_raw = topics_raw.mine(current_user.id)
-    when 'pending'
-      topics_raw = topics_raw.pending.mine(current_user.id)
-    else
-      topics_raw = topics_raw.where(current_status: @status)
-    end
-    @topics = topics_raw.paginate(page: params[:page], per_page: Settings.per_page)
-    tracker("Admin-Nav", "Click", @status.titleize)
+      .search(building_id_eq: current_user.building_id, name_cont: params[:keyword],
+        created_at_gteq: params[:created_at], closed_date_lteq: params[:closed_date])
+      .result.order(updated_at: :desc)
+      .paginate(page: params[:page], per_page: Settings.per_page)
   end
 
   def show
-    GeneralHelpers.params_validation(:get, :admin_show_topic, params)
-    @topic = Topic.where(id: params[:id]).first
-
-    raise APIError::Common::NotFound.new(
-      {
-        status: 404,
-        message: "Không tìm thấy topic"
-      }
-    ) unless @topic
-
-    # REVIEW: Try not opening message on view unless assigned
-    check_current_user_is_allowed? @topic
-    if @topic.current_status == 'new' && @topic.assigned?
-      tracker("Agent: #{current_user.name}", "Opened Ticket", @topic.to_param, @topic.id)
-      @topic.open
-    end
-    get_all_teams
-    @posts = @topic.posts.chronologic.includes(:user)
-    tracker("Agent: #{current_user.name}", "Viewed Ticket", @topic.to_param, @topic.id)
-    fetch_counts
-
-    render json: {
-      code: Settings.code.success,
-      message: "",
-      data: {
-        topic: @topic,
-        posts: @posts
-      }
-    }
+    @topic = Topic.includes(:user, :assigned_user).find_by(id: params[:id])
+    raise APIError::Common::NotFound unless @topic
+    @posts = Post.select("users.name as user_name", "users.email as user_email", "posts.*")
+      .joins(:user).where(topic_id: @topic.id)
   end
 
   def create
     params[:admin_create_topic] = JSON.parse(params[:admin_create_topic])
     GeneralHelpers.params_validation(:create, :admin_create_topic, params)
-    topic = Topic.create(
-      name: params[:admin_create_topic][:topic][:name],
-      tag_list: params[:admin_create_topic][:topic][:tag_list],
-      user_id: current_user.id
-    )
+
+    if params[:admin_create_topic][:topic][:assigned_user].present?
+      params_assigned_user = params[:admin_create_topic][:topic][:assigned_user]
+      assigned_user = User.find_by(uid: params_assigned_user[:id])
+      unless assigned_user
+        assigned_user = User.new(
+          uid: params_assigned_user[:id],
+          name: params_assigned_user[:name],
+          email: params_assigned_user[:email],
+          phone: params_assigned_user[:phone],
+          role: params_assigned_user[:type],
+          building_id: current_user.building_id
+        )
+        raise APIError::Common::UnSaved unless assigned_user.save
+      end
+      topic = Topic.create(
+        name: params[:admin_create_topic][:topic][:name],
+        user_id: current_user.id,
+        building_id: current_user.building_id,
+        assigned_user_id: assigned_user.try(:id),
+        current_status: "active"
+      )
+    else
+      topic = Topic.create(
+        name: params[:admin_create_topic][:topic][:name],
+        user_id: current_user.id,
+        building_id: current_user.building_id,
+        current_status: "new"
+      )
+    end
     post = topic.posts.new(
       body: params[:admin_create_topic][:post][:body],
       user_id: current_user.id,
-      kind: :first,
-      attachments: params[:admin_create_topic][:post][:attachments]
+      kind: :first
     )
     if post.save
       attachments = params[:attachments]
       if attachments.present?
-        dir = "#{Rails.root}/public/attachment/posts/#{post.id}/"
+        dir = "#{Rails.root}/public/attachments/posts/#{post.id}/"
         post.update_columns attachments: save_files_with_token(dir, attachments).to_json
       end
     end
@@ -93,122 +102,75 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
 
   # Updates discussion status
   def update_topic
-    GeneralHelpers.params_validation(:update, :admin_update_topic, params)
-    logger.info("Starting update")
-
-    #handle array of topics
     @topics = Topic.where(id: params[:topic_ids])
-
+    raise APIError::Common::NotFound unless @topics.present?
     bulk_post_attributes = []
-
-    if params[:change_status].present?
-
-      if ["closed", "reopen", "trash"].include?(params[:change_status])
-        user_id = current_user.id || 2
-        @topics.each do |topic|
-          # prepare bulk params
-          bulk_post_attributes << {body: I18n.t("#{params[:change_status]}_message", user_name: User.find(user_id).name), kind: 'note', user_id: user_id, topic_id: topic.id}
-        end
-
-        case params[:change_status]
-        when 'closed'
-          @topics.bulk_close(bulk_post_attributes)
-        when 'reopen'
-          @topics.bulk_reopen(bulk_post_attributes)
-        when 'trash'
-          @topics.bulk_trash(bulk_post_attributes)
-        end
-      else
-        @topics.update_all(current_status: params[:change_status])
-      end
-
-      @action_performed = "Marked #{params[:change_status].titleize}"
-      # Calls to GA for close, reopen, assigned.
-      tracker("Agent: #{current_user.name}", @action_performed, @topics.to_param, 0)
-
-    end
-
-    if params[:topic_ids].present?
-      @topic = Topic.find_by_id(params[:topic_ids].last)
-      raise APIError::Common::NotFound.new(
-        {
-          status: 404,
-          message: "Không tìm thấy topic"
+    if params[:change_status] == "closed"
+      @topics.each do |topic|
+        bulk_post_attributes << {
+          body: "Công việc này đã đóng bởi #{current_user.name}.",
+          kind: 'note',
+          user_id: current_user.id,
+          topic_id: topic.id
         }
-      ) unless @topic
-      @posts = @topic.posts.chronologic
-    end
-
-    fetch_counts
-    get_all_teams
-
-    if params[:topic_ids].count > 1
-      get_tickets
-      redirect_path({admin_topics_path: 'admin/topics/index'}) && return
+      end
+      @topics.bulk_close(bulk_post_attributes)
+    elsif params[:change_status] == "mine"
+      @topics.each do |topic|
+        bulk_post_attributes << {
+          body: "#{current_user.name} đã nhận công việc này.",
+          kind: 'note',
+          user_id: current_user.id,
+          topic_id: topic.id
+        }
+      end
+      @topics.bulk_agent_assign(bulk_post_attributes, current_user.id)
+    elsif params[:change_status] == "new"
+      @topics.each do |topic|
+        bulk_post_attributes << {
+          body: "Công việc này đã mở trở lại bởi #{current_user.name}",
+          kind: 'note',
+          user_id: current_user.id,
+          topic_id: topic.id
+        }
+      end
+      @topics.bulk_reopen(bulk_post_attributes)
     else
-      redirect_path({update_admin_topics_path: 'admin/topics/update_ticket'}, {id: @topic.id}) && return
+      @topics.update_all(current_status: params[:change_status], updated_at: Time.current)
     end
+    render json: {code: 1, message: "Thành công"}
   end
 
   # Assigns a discussion to another agent
   def assign_agent
-    GeneralHelpers.params_validation(:update, :admin_assign_agent, params)
-    assigned_user = User.find_by_id(params[:assigned_user_id])
-    raise APIError::Common::NotFound.new(
-      {
-        status: 404,
-        message: "Không tìm thấy người dùng"
-      }
-    )
-    @topics = Topic.where(id: params[:topic_ids])
-    bulk_post_attributes = []
-    unless params[:assigned_user_id].blank?
-      #handle array of topics
-      @topics.each do |topic|
-        # if message was unassigned previously, use the new assignee
-        # this is to give note attribution below
-        previous_assigned_id = topic.assigned_user_id || params[:assigned_user_id]
-        bulk_post_attributes << {body: I18n.t(:assigned_message, assigned_to: assigned_user.name), kind: 'note', user_id: previous_assigned_id, topic_id: topic.id}
-
-        # Calls to GA
-        tracker("Agent: #{current_user.name}", "Assigned to #{assigned_user.name.titleize}", @topic.to_param, 0)
-      end
-    end
-
-    @topics.bulk_agent_assign(bulk_post_attributes, assigned_user.id) if bulk_post_attributes.present?
-
-    if params[:topic_ids].count > 1
-      get_tickets
-    else
-      @topic = Topic.find_by_id(@topics.first.id)
-      raise APIError::Common::NotFound.new(
-        {
-          status: 404,
-          message: "Không tìm thấy topic"
-        }
+    raise APIError::Common::BadRequest unless params[:assigned_user].present?
+    assigned_user = User.find_by(uid: params[:assigned_user][:id])
+    unless assigned_user
+      assigned_user = User.new(
+        uid: params[:assigned_user][:id],
+        name: params[:assigned_user][:name],
+        email: params[:assigned_user][:email],
+        phone: params[:assigned_user][:phone],
+        role: params[:assigned_user][:type],
+        building_id: current_user.building_id
       )
-      @posts = @topic.posts.chronologic
+      raise APIError::Common::UnSaved unless assigned_user.save
     end
 
-    logger.info("Count: #{params[:topic_ids].count}")
+    @topics = Topic.where(id: params[:topic_ids])
+    raise APIError::Common::NotFound unless @topics.present?
 
-    fetch_counts
-    get_all_teams
-
-    render json: {
-      code: Settings.code.success,
-      message: "",
-      data: {
-        redirect_to: {
-          path: path =  if params[:topic_ids].count > 1
-                          get_tickets
-                          admin_topics_path
-                        else
-                          {update_ticket: 'update_ticket', id: @topic.id}
-                        end
-        }
+    bulk_post_attributes = []
+    @topics.each do |topic|
+      bulk_post_attributes << {
+        body: "Công việc này đã được gán cho #{assigned_user.name}",
+        kind: 'note',
+        user_id: current_user.id,
+        topic_id: topic.id
       }
-    }
+    end
+    @topics.bulk_agent_assign(bulk_post_attributes, assigned_user.id) if bulk_post_attributes.present?
+    render json: {code: 1, message: "Thành công"}
   end
 
   # Toggle privacy of a topic

@@ -6,6 +6,7 @@ class CreateUsers < ActiveRecord::Migration[5.1]
       t.string :name
       t.string :email
       t.string :avatar
+      t.integer :building_id
       # t.boolean :admin, :default => false
       t.text :bio
       t.text :signature
