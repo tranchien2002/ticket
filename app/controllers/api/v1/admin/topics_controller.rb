@@ -141,7 +141,6 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
     render json: {code: 1, message: "Thành công"}
   end
 
-  # Assigns a discussion to another agent
   def assign_agent
     raise APIError::Common::BadRequest unless params[:assigned_user].present?
     assigned_user = User.find_by(uid: params[:assigned_user][:id])
