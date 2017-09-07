@@ -21,6 +21,14 @@ Rails.application.routes.draw do
 
         root to: 'dashboard#index'
       end
+
+      namespace :employee do
+        resources :topics, only: [:index, :show] do
+          get :dashboard, on: :collection
+          put :update_topic, on: :collection
+          get :search, on: :collection
+        end
+      end
     end
   end
 

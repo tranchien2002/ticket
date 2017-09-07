@@ -47,6 +47,10 @@ class ApplicationController < ActionController::Base
     check_access_role(__method__.to_s)
   end
 
+  def check_Technician_and_Cashier
+    check_access_role(__method__.to_s)
+  end
+
   def check_agent
     check_access_role(__method__.to_s)
   end
