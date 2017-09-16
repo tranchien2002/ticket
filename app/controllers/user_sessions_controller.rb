@@ -11,7 +11,7 @@ class UserSessionsController < ApplicationController
     user.role = omniauth["info"]["role"]
     user.phone = omniauth["info"]["phone"]
     user.avatar = omniauth["info"]["avatar"]
-    user.building_id = omniauth["info"]["building_id"]
+    user.building_id = omniauth["info"]["building_id"].to_i
     raise APIError::Common::UnSaved unless user.save
     session[:user] = omniauth
     render json: {code: 1, message: "Thành công"}

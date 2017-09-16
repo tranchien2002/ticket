@@ -7,7 +7,7 @@ class User < ActiveRecord::Base
 
   attr_accessor :opt_in
 
-  validates :name, presence: true, format: { with: /\A\D+\z/ }
+  validates :name, presence: true
   validates :email, format: { with: /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i, on: :create }, allow_blank: true
 
   include PgSearch
