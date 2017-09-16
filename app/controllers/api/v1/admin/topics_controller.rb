@@ -58,18 +58,14 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
 
     if params[:admin_create_topic][:topic][:assigned_user].present?
       params_assigned_user = params[:admin_create_topic][:topic][:assigned_user]
-      assigned_user = User.find_by(uid: params_assigned_user[:id])
-      unless assigned_user
-        assigned_user = User.new(
-          uid: params_assigned_user[:id],
-          name: params_assigned_user[:name],
-          email: params_assigned_user[:email],
-          phone: params_assigned_user[:phone],
-          role: params_assigned_user[:type],
-          building_id: current_user.building_id
-        )
-        raise APIError::Common::UnSaved unless assigned_user.save
-      end
+      assigned_user = User.find_by(uid: params_assigned_user[:id]) || User.new
+      assigned_user.uid = params_assigned_user[:id]
+      assigned_user.name = params_assigned_user[:name]
+      assigned_user.email = params_assigned_user[:email]
+      assigned_user.phone = params_assigned_user[:phone]
+      assigned_user.role = params_assigned_user[:type]
+      assigned_user.building_id = current_user.building_id
+      raise APIError::Common::UnSaved unless assigned_user.save
       topic = Topic.create(
         name: params[:admin_create_topic][:topic][:name],
         user_id: current_user.id,
@@ -143,18 +139,14 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
 
   def assign_agent
     raise APIError::Common::BadRequest unless params[:assigned_user].present?
-    assigned_user = User.find_by(uid: params[:assigned_user][:id])
-    unless assigned_user
-      assigned_user = User.new(
-        uid: params[:assigned_user][:id],
-        name: params[:assigned_user][:name],
-        email: params[:assigned_user][:email],
-        phone: params[:assigned_user][:phone],
-        role: params[:assigned_user][:type],
-        building_id: current_user.building_id
-      )
-      raise APIError::Common::UnSaved unless assigned_user.save
-    end
+    assigned_user = User.find_by(uid: params[:assigned_user][:id]) || User.new
+    assigned_user.uid = params_assigned_user[:id]
+    assigned_user.name = params_assigned_user[:name]
+    assigned_user.email = params_assigned_user[:email]
+    assigned_user.phone = params_assigned_user[:phone]
+    assigned_user.role = params_assigned_user[:type]
+    assigned_user.building_id = current_user.building_id
+    raise APIError::Common::UnSaved unless assigned_user.save
 
     @topics = Topic.where(id: params[:topic_ids])
     raise APIError::Common::NotFound unless @topics.present?
