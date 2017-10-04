@@ -103,7 +103,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
 
   def get_daily_stats
     @tickets = Topic.group_by_day(:created_at, range: @start_date..@end_date).count
-    @closed = Topic.where(current_status: 'closed').group_by_day(:created_at, range: @start_date..@end_date).count
+    @closed = Topic.where(current_status: Settings.ticket_status.closed).group_by_day(:created_at, range: @start_date..@end_date).count
     @actions = Post.group_by_day(:created_at, range: @start_date..@end_date).count
     get_total_stats
   end
@@ -111,7 +111,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   def get_hourly_stats
     unless @scoped_stats.nil?
       @tickets = @scoped_stats.group_by_hour_of_day(:created_at).count
-      @closed = @scoped_stats.where(current_status: 'closed').group_by_hour_of_day(:created_at).count
+      @closed = @scoped_stats.where(current_status: Settings.ticket_status.closed).group_by_hour_of_day(:created_at).count
       @actions = @scoped_posts.group_by_hour_of_day(:created_at).count
     end
     get_total_stats
@@ -120,7 +120,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   def get_total_stats
     @total_tickets = @scoped_stats.count
     @total_replies = @scoped_posts.where(kind: 'reply').count
-    @total_closed = @scoped_stats.where(current_status: 'closed').count
+    @total_closed = @scoped_stats.where(current_status: Settings.ticket_status.closed).count
     @total_activities = @scoped_posts.count
     filtered_stats = @scoped_stats.where("current_status = ? AND closed_date IS NOT NULL", 'closed')
     arr_time_differences = filtered_stats.map {|t| t.closed_date - t.created_at} unless filtered_stats.nil?

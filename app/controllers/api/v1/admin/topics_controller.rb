@@ -23,7 +23,7 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
       @topics = Topic.select("users.uid as user_uid", "users.name as user_name", "users.email as user_email", "topics.*",
         "assigned_users.uid as assigned_user_uid", "assigned_users.name as assigned_user_name", "assigned_users.email as assigned_user_email")
         .joins(:user).joins("LEFT JOIN users assigned_users ON assigned_users.id = topics.assigned_user_id")
-        .where(building_id: current_user.building_id, current_status: "active", assigned_user_id: current_user.id)
+        .where(building_id: current_user.building_id, current_status: Settings.ticket_status.active, assigned_user_id: current_user.id)
         .order(updated_at: :desc)
         .paginate(page: params[:page], per_page: Settings.per_page)
     else
@@ -56,6 +56,19 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
     params[:admin_create_topic] = JSON.parse(params[:admin_create_topic])
     GeneralHelpers.params_validation(:create, :admin_create_topic, params)
 
+    new_ticket = {
+      name: params[:admin_create_topic][:topic][:name],
+      user_id: current_user.id,
+      building_id: current_user.building_id
+    }
+
+    [:begin_date, :deadline].each do |key|
+      if params[:admin_create_topic][:topic].has_key?(key) &&
+        params[:admin_create_topic][:topic][key].present?
+        new_ticket.merge!({"#{key}": params[:admin_create_topic][:topic][key]})
+      end
+    end
+
     if params[:admin_create_topic][:topic][:assigned_user].present?
       params_assigned_user = params[:admin_create_topic][:topic][:assigned_user]
       assigned_user = User.find_by(uid: params_assigned_user[:id]) || User.new
@@ -66,21 +79,19 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
       assigned_user.role = params_assigned_user[:type]
       assigned_user.building_id = current_user.building_id
       raise APIError::Common::UnSaved unless assigned_user.save
-      topic = Topic.create(
-        name: params[:admin_create_topic][:topic][:name],
-        user_id: current_user.id,
-        building_id: current_user.building_id,
-        assigned_user_id: assigned_user.try(:id),
-        current_status: "active"
+
+      new_ticket.merge!(
+        {
+          assigned_user_id: assigned_user.try(:id),
+          current_status: Settings.ticket_status.active
+        }
       )
     else
-      topic = Topic.create(
-        name: params[:admin_create_topic][:topic][:name],
-        user_id: current_user.id,
-        building_id: current_user.building_id,
-        current_status: "new"
-      )
+      new_ticket.merge!({current_status: Settings.ticket_status.new})
     end
+
+    topic = Topic.create(new_ticket)
+
     post = topic.posts.new(
       body: params[:admin_create_topic][:post][:body],
       user_id: current_user.id,

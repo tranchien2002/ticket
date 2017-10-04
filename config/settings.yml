@@ -31,4 +31,15 @@ result_codes:
   failure: "Error"
   success: "Success"
 
+ticket_status:
+  active: "active"
+  new: "new"
+  closed: "closed"
+  pending: "pending"
+  open: "open"
+  spam: "spam"
+  trash: "trash"
+  out_of_date: "out of date"
+
 chungcu: "http://chungcu1.cloudapp.net"
+# chungcu: "http://localhost:3000"

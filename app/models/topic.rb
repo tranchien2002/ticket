@@ -15,29 +15,29 @@ class Topic < ActiveRecord::Base
   has_attachments  :screenshots, accept: [:jpg, :png, :gif, :pdf, :txt, :rtf, :doc, :docx, :ppt, :pptx, :xls, :xlsx, :zip]
 
   # various scopes
-  scope :active, -> (building_id) {where(current_status: "active", building_id: building_id)}
+  scope :active, -> (building_id) {where(current_status: Settings.ticket_status.active, building_id: building_id)}
   scope :mine, -> (building_id, user_id) {where(assigned_user_id: user_id, building_id: building_id)}
-  scope :pending, -> (building_id) {where(current_status: "pending", building_id: building_id)}
-  scope :closed, -> (building_id) {where(current_status: "closed", building_id: building_id)}
-  scope :neww, -> (building_id) {where(current_status: "new", building_id: building_id)}
+  scope :pending, -> (building_id) {where(current_status: Settings.ticket_status.pending, building_id: building_id)}
+  scope :closed, -> (building_id) {where(current_status: Settings.ticket_status.closed, building_id: building_id)}
+  scope :neww, -> (building_id) {where(current_status: Settings.ticket_status.new, building_id: building_id)}
 
   scope :recent, -> { order('created_at DESC').limit(8) }
-  # scope :open, -> { where(current_status: "open") }
-  scope :unread, -> { where("assigned_user_id = ? OR current_status = ?", nil, "new").where.not(current_status: 'closed') }
-  scope :spam, -> { where(current_status: "spam")}
+  # scope :open, -> { where(current_status: Settings.ticket_status.open) }
+  scope :unread, -> { where("assigned_user_id = ? OR current_status = ?", nil, Settings.ticket_status.new).where.not(current_status: Settings.ticket_status.closed) }
+  scope :spam, -> { where(current_status: Settings.ticket_status.spam)}
   scope :assigned, -> { where.not(assigned_user_id: nil) }
 
   scope :chronologic, -> { order('updated_at DESC') }
   scope :reverse, -> { order('updated_at ASC') }
   scope :by_popularity, -> { order('points DESC') }
   # scope :active, -> { where(current_status: %w(open pending)) }
-  scope :undeleted, -> { where.not(current_status: 'trash') }
+  scope :undeleted, -> { where.not(current_status: Settings.ticket_status.trash) }
   scope :front, -> { limit(6) }
   scope :for_doc, -> { where("doc_id= ?", doc)}
 
   # provided both public and private instead of one method, for code readability
-  scope :isprivate, -> { where.not(current_status: 'spam').where(private: true)}
-  scope :ispublic, -> { where.not(current_status: 'spam').where(private: false)}
+  scope :isprivate, -> { where.not(current_status: Settings.ticket_status.spam).where(private: true)}
+  scope :ispublic, -> { where.not(current_status: Settings.ticket_status.spam).where(private: false)}
 
   # may want to get rid of this filter:
   # before_save :check_for_private
@@ -62,40 +62,40 @@ class Topic < ActiveRecord::Base
   end
 
   def open?
-    self.current_status == "open"
+    self.current_status == Settings.ticket_status.open
   end
 
   def open
-    self.current_status = "pending"
+    self.current_status = Settings.ticket_status.pending
     self.save
   end
 
   def reopen(user_id = 2)
     self.posts.create(body: I18n.t(:reopen_message, user_name: User.find(user_id).name), kind: 'note', user_id: user_id)
-    self.current_status = "open"
+    self.current_status = Settings.ticket_status.open
     self.save
   end
 
   def self.bulk_reopen(post_attributes)
     Post.bulk_insert values: post_attributes
-    self.update_all(current_status: 'new', updated_at: Time.current)
+    self.update_all(current_status: Settings.ticket_status.new, updated_at: Time.current)
   end
 
   def close(user_id = 2)
     self.posts.create(body: I18n.t(:closed_message, user_name: User.find(user_id).name), kind: 'note', user_id: user_id)
-    self.current_status = "closed"
+    self.current_status = Settings.ticket_status.closed
     self.closed_date = Time.current
     self.save
   end
 
   def self.bulk_close(post_attributes)
     Post.bulk_insert values: post_attributes
-    self.update_all(current_status: 'closed', closed_date: Time.current, updated_at: Time.current)
+    self.update_all(current_status: Settings.ticket_status.closed, closed_date: Time.current, updated_at: Time.current)
   end
 
   def trash(user_id = 2)
     self.posts.create(body: I18n.t(:trash_message, user_name: User.find(user_id).name), kind: 'note', user_id: user_id)
-    self.current_status = "trash"
+    self.current_status = Settings.ticket_status.trash
     self.closed_date = Time.current
     self.forum_id = 2
     self.private = true
@@ -105,19 +105,19 @@ class Topic < ActiveRecord::Base
 
   def self.bulk_trash(post_attributes)
     Post.bulk_insert values: post_attributes
-    self.update_all(current_status: 'trash', forum_id: 2, private: true, assigned_user_id: nil, closed_date: Time.current)
+    self.update_all(current_status: Settings.ticket_status.trash, forum_id: 2, private: true, assigned_user_id: nil, closed_date: Time.current)
   end
 
   def assign(user_id=2, assigned_to)
     self.posts.create(body: I18n.t(:assigned_message, assigned_to: User.find(assigned_to).name), kind: 'note', user_id: user_id)
     self.assigned_user_id = assigned_to
-    self.current_status = 'pending'
+    self.current_status = Settings.ticket_status.pending
     self.save
   end
 
   def self.bulk_agent_assign(post_attributes, assigned_to)
     Post.bulk_insert values: post_attributes
-    self.update_all(assigned_user_id: assigned_to, current_status: "active", updated_at: Time.current)
+    self.update_all(assigned_user_id: assigned_to, current_status: Settings.ticket_status.active, updated_at: Time.current)
   end
 
   def self.bulk_group_assign(post_attributes, assigned_group)
@@ -241,5 +241,16 @@ class Topic < ActiveRecord::Base
 
   def add_locale
     self.locale = I18n.locale
+  end
+
+  def self.out_of_date(params)
+    query_params = {current_status: "out of date"}
+    [:building_id, :user_id, :team_id].each do |key|
+      if params.has_key?(key)
+        query_params.merge!({"#{key}": params[key]})
+      end
+    end
+
+    self.where(query_params)
   end
 end
