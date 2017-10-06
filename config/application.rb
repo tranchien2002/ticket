@@ -17,6 +17,7 @@ module Ticket
     config.paths.add File.join("app", "api"), glob: File.join("**", "*.rb")
     config.autoload_paths += Dir[Rails.root.join("app", "api", "*")]
     config.i18n.default_locale = :vi
+    config.time_zone = 'Asia/Ho_Chi_Minh'
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do

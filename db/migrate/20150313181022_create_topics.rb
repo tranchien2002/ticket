@@ -15,6 +15,8 @@ class CreateTopics < ActiveRecord::Migration[5.1]
       t.boolean :cheatsheet, :default => false
       t.integer :points, :default => 0
       t.text :post_cache
+      t.datetime :begin_date, :default => Time.zone.now
+      t.datetime :deadline
 
       t.integer :building_id
 

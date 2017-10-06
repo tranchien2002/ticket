@@ -144,7 +144,20 @@ module ParamsValidation
               validation: [
                 {expression: "var.present?", message: "Không tồn tại tên topic"}
               ]
-            }#,
+            }
+            # begin_date: {
+            #   status: Settings.params_attribute_status.optional,
+            #   validation: [
+            #     {expression: "var.present?", message: "Không tồn tại thời điểm bắt đầu công việc"}
+            #   ]
+            # },
+            # end_date: {
+            #   status: Settings.params_attribute_status.optional,
+            #   validation: [
+            #     {expression: "var.present?", message: "Không tồn tại thời điểm kết thúc công việc"}
+            #   ]
+            # }
+            #,
             # team_list: {
             #   status: Settings.params_attribute_status.required,
             #   validation: []

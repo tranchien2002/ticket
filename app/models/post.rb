@@ -46,7 +46,7 @@ class Post < ActiveRecord::Base
       else
         logger.info('waiting on admin')
         waiting_on = "admin"
-        status = "pending" unless self.topic.current_status == 'new'
+        status = "pending" unless self.topic.current_status == Settings.ticket_status.new
       end
     end
 

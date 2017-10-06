@@ -22,7 +22,7 @@ class Api::V1::Employee::TopicsController < ApplicationController
       @topics = Topic.select("users.uid as user_uid", "users.name as user_name", "users.email as user_email", "topics.*",
         "assigned_users.uid as assigned_user_uid", "assigned_users.name as assigned_user_name", "assigned_users.email as assigned_user_email")
         .joins(:user).joins("LEFT JOIN users assigned_users ON assigned_users.id = topics.assigned_user_id")
-        .where(building_id: current_user.building_id, current_status: "active", assigned_user_id: current_user.id)
+        .where(building_id: current_user.building_id, current_status: Settings.ticket_status.active, assigned_user_id: current_user.id)
         .order(updated_at: :desc)
         .paginate(page: params[:page], per_page: Settings.per_page)
     else

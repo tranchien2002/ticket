@@ -18,7 +18,7 @@
 /db/schema.rb
 /test/*
 Gemfile.lock
-/config/database.yml
+config/database.yml
 
 .byebug_history
 
