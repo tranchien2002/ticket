@@ -39,7 +39,7 @@ ticket_status:
   open: "open"
   spam: "spam"
   trash: "trash"
-  out_of_date: "out of date"
+  out_of_date: "out_of_date"
 
 chungcu: "http://chungcu1.cloudapp.net"
 # chungcu: "http://localhost:3000"
