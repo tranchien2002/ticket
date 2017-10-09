@@ -19,13 +19,12 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
                   @new := @new + 1,
                 if (topics.current_status = '#{Settings.ticket_status.active}',
                   @active := @active + 1,
-                if (topics.current_status = '#{Settings.ticket_status.mine}',
-                  @mine := @mine + 1,
                 if (topics.current_status = '#{Settings.ticket_status.closed}',
                   @closed := @closed + 1,
                 if (topics.current_status = '#{Settings.ticket_status.out_of_date}',
-                  @out_of_date := @out_of_date + 1, 0))))),
-                (@all := @all + 1)
+                  @out_of_date := @out_of_date + 1, 0)))),
+                (@all := @all + 1),
+                if (topics.assigned_user_id = #{current_user.id}, @mine := @mine + 1, 0)
         from topics where topics.building_id = #{current_user.building_id}
       |)
 
