@@ -4,11 +4,44 @@ class Api::V1::Admin::TopicsController < Api::V1::Admin::BaseController
   # before_action :get_all_teams, except: ['shortcuts']
 
   def dashboard
-    @all = Topic.where(building_id: current_user.building_id).count
-    @new = Topic.neww(current_user.building_id).count
-    @active = Topic.active(current_user.building_id).count
-    @mine = Topic.mine(current_user.building_id, current_user.id).count
-    @closed = Topic.closed(current_user.building_id).count
+    result = Topic.transaction do
+      Topic.connection.execute(%Q|
+        set @all = 0,
+            @new = 0,
+            @active = 0,
+            @mine = 0,
+            @out_of_date = 0,
+            @closed = 0;
+      |)
+
+      Topic.connection.execute(%Q|
+        select  if (topics.current_status = '#{Settings.ticket_status.new}',
+                  @new := @new + 1,
+                if (topics.current_status = '#{Settings.ticket_status.active}',
+                  @active := @active + 1,
+                if (topics.current_status = '#{Settings.ticket_status.mine}',
+                  @mine := @mine + 1,
+                if (topics.current_status = '#{Settings.ticket_status.closed}',
+                  @closed := @closed + 1,
+                if (topics.current_status = '#{Settings.ticket_status.out_of_date}',
+                  @out_of_date := @out_of_date + 1, 0))))),
+                (@all := @all + 1)
+        from topics where topics.building_id = #{current_user.building_id}
+      |)
+
+      Topic.connection.execute(%Q|
+        select  @all, @new, @active, @mine, @out_of_date, @closed;
+      |)
+    end
+
+    result = RawSql.convert_result_to_hash(result)[0]
+
+    @all = result[:@all]
+    @new = result[:@new]
+    @active = result[:@active]
+    @mine = result[:@mine]
+    @out_of_date = result[:@out_of_date]
+    @closed = result[:@closed]
   end
 
   def index
