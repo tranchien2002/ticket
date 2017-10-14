@@ -35,6 +35,8 @@ gem 'carrierwave'
 gem "rack-cors"
 gem 'responders'
 gem 'mini_magick'
+
+gem "awesome_nested_set"
 #===========
 
 #4/10

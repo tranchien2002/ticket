@@ -7,6 +7,7 @@ namespace :data do
     #     worker.add(name: Faker::Name.name, uid: uid)
     #   end
     # end
+    User.create(name: 'BuildingManager', email: 'one@gmail.com', uid: 1)
 
     Topic.bulk_insert do |worker|
       60.times {

@@ -1,8 +1,8 @@
 class CreateTopics < ActiveRecord::Migration[5.1]
   def change
     create_table :topics do |t|
-      t.integer :forum_id
-      t.integer :user_id
+      t.references :group, index: true, foreign_key: true
+      t.references :user, index: true, foreign_key: true
       t.string :name
       t.integer :posts_count, :default => 0, :null => false
       t.string :waiting_on, :default => 'admin', :null => false
