@@ -22,6 +22,8 @@ class CreateUsers < ActiveRecord::Migration[5.1]
       t.string :state
       # t.string :zip
       t.string :title
+      t.string :uid
+      t.string :account_number
       # t.string :twitter
       # t.string :linkedin
       # t.string :thumbnail
@@ -31,8 +33,17 @@ class CreateUsers < ActiveRecord::Migration[5.1]
       t.integer :assigned_ticket_count, :default => 0
       t.integer :topics_count, :default => 0
       t.boolean :active, :default => true
+      t.string :priority, default: 'normal'
+      t.text :invitation_message
+      t.boolean   :notify_on_private, default: false
+      t.boolean   :notify_on_public, default: false
+      t.boolean   :notify_on_reply, default: false
+      t.index     :notify_on_private
+      t.index     :notify_on_public
+      t.index     :notify_on_reply
 
       t.timestamps null: false
     end
+      add_index :users, :priority
   end
 end

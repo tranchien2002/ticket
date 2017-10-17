@@ -2,7 +2,7 @@ class CreateTopics < ActiveRecord::Migration[5.1]
   def change
     create_table :topics do |t|
       t.integer :forum_id
-      t.integer :user_id
+      # t.integer :user_id
       t.string :name
       t.integer :posts_count, :default => 0, :null => false
       t.string :waiting_on, :default => 'admin', :null => false
@@ -17,10 +17,15 @@ class CreateTopics < ActiveRecord::Migration[5.1]
       t.text :post_cache
       t.datetime :begin_date, :default => Time.zone.now
       t.datetime :deadline
+      t.string :locale #, default: 'en'
+      t.string :channel, default: 'email'
+      t.string :kind, default: 'ticket'
+
 
       t.integer :building_id
-
+      t.references :user, foreign_key: true
       t.timestamps null: false
     end
+    add_index :topics, :kind
   end
 end
